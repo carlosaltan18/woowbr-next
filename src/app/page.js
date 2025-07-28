@@ -110,7 +110,7 @@ export default function Component() {
 
   return (
 
-      <div className="flex flex-col min-h-screen bg-white text-black">
+      <div className="josefin-sans flex flex-col min-h-screen bg-white text-black">
         {/* Header */}
         <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
           <div className="container flex h-16 items-center justify-between px-2 sm:px-4">
@@ -185,7 +185,7 @@ export default function Component() {
                 <div className="flex flex-col justify-center space-y-4">
                   <div className="space-y-2">
                     <Badge className="w-fit bg-black text-white text-xs sm:text-base">
-                      ¡Simepre tan WOOW!
+                      ¡Siempre tan WOOW!
                     </Badge>
                     <h1 className="text-2xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none text-black">
                       Encuentra lo mejor en{" "}
