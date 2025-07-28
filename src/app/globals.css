@@ -122,5 +122,8 @@
   body {
     @apply bg-background text-foreground;
   }
+  body, .josefin-sans {
+    font-family: 'Josefin Sans';
+  }
 }
 
