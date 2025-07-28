@@ -403,72 +403,97 @@ export default function Component() {
                   <h2 className="text-2xl font-bold tracking-tighter sm:text-4xl text-white">
                     ¡No te pierdas nuestras ofertas!
                   </h2>
-                  <p className="max-w-full text-gray-300 text-sm sm:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                    Si quieres que te contactemos dejanos tu email y te enviaremos las mejores ofertas y novedades de nuestros productos.
-                  </p>
-                </div>
-                <div className="w-full max-w-sm space-y-2">
-                  <form className="flex flex-col gap-2 sm:flex-row">
-                    <Input type="email" placeholder="Tu email" className="flex-1 bg-white text-black" />
-                    <Button type="submit" variant="secondary" className="w-full sm:w-auto bg-black text-white hover:bg-gray-800">
-                      Contactar
-                    </Button>
-                  </form>
-                </div>
+                <p className="max-w-full text-gray-300 text-sm sm:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                  Si quieres que te contactemos dejanos tu email y te enviaremos las mejores ofertas y novedades de nuestros productos.
+                </p>
+              </div>
+              <div className="w-full max-w-sm space-y-2">
+                <form className="flex flex-col gap-2 sm:flex-row">
+                  <Input type="email" placeholder="Tu email" className="flex-1 bg-white text-black" />
+                  <Button type="submit" variant="secondary" className="w-full sm:w-auto bg-black text-white hover:bg-gray-800">
+                    Contactar
+                  </Button>
+                </form>
               </div>
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* Footer */}
-          <footer className="border-t bg-gray-100">
-            <div className="container px-2 sm:px-4 md:px-6 py-8 md:py-12">
-              <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <div className="h-8 w-8 rounded-lg flex items-center justify-center">
-                      <Image
-                        src={imgWooebe}
-                        alt="Logo Woowbe"
-                        width={32}
-                        height={32}
-                        className="object-cover"
-                      />
-                    </div>
-                    <span className="text-xl font-bold text-black bg-clip-text">
-                      Woowbe
-                    </span>
+        {/* Footer */}
+        <footer className="border-t bg-gray-100">
+          <div className="container px-2 sm:px-4 md:px-6 py-8 md:py-12">
+            <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <div className="h-8 w-8 rounded-lg flex items-center justify-center">
+                    <Image
+                      src={imgWooebe}
+                      alt="Logo Woowbe"
+                      width={32}
+                      height={32}
+                      className="object-cover"
+                    />
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Tu tienda en línea de confianza para encontrar los mejores productos a precios increíbles.
-                  </p>
+                  <span className="text-xl font-bold text-black bg-clip-text">
+                    Woowbe
+                  </span>
                 </div>
-                <div className="space-y-4">
-                  <span className="text-xs text-muted-foreground">Síguenos:</span>
-                  <div className="flex space-x-2">
-                    <a href="https://www.facebook.com/WoowBeGT/?locale=es_LA" target="_blank" rel="noopener noreferrer">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <span className="sr-only">Facebook</span>
-                        <FaFacebook className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                    </a>
-                    <a href="https://www.instagram.com/woowbe/" target="_blank" rel="noopener noreferrer">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <span className="sr-only">Instagram</span>
-                        <FaInstagram className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                    </a>
-                    <a href="https://www.tiktok.com/@woowbegt" target="_blank" rel="noopener noreferrer">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <span className="sr-only">TikTok</span>
-                        <FaTiktok className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                    </a>
-                  </div>
+                <p className="text-sm text-muted-foreground">
+                  Tu tienda en línea de confianza para encontrar los mejores productos a precios increíbles.
+                </p>
+              </div>
+              <div className="space-y-4">
+                <span className="text-base text-muted-foreground font-medium">Síguenos:</span>
+                <div className="flex space-x-3">
+                  <a
+                    href="https://www.facebook.com/WoowBeGT/?locale=es_LA"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-12 w-12 flex items-center justify-center min-w-0"
+                    >
+                      <span className="sr-only">Facebook</span>
+                      <FaFacebook className="!h-6 !w-6 text-muted-foreground" />
+                    </Button>
+                  </a>
+                  <a
+                    href="https://www.instagram.com/woowbe/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-12 w-12 flex items-center justify-center min-w-0"
+                    >
+                      <span className="sr-only">Instagram</span>
+                      <FaInstagram className="!h-6 !w-6 text-muted-foreground" />
+                    </Button>
+                  </a>
+                  <a
+                    href="https://www.tiktok.com/@woowbegt"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-12 w-12 flex items-center justify-center min-w-0"
+                    >
+                      <span className="sr-only">TikTok</span>
+                      <FaTiktok className="!h-6 !w-6 text-muted-foreground" />
+                    </Button>
+                  </a>
                 </div>
               </div>
+
             </div>
-          </footer>
-        </main>
-      </div>
+          </div>
+        </footer>
+      </main>
+    </div>
   );
 }
