@@ -37,7 +37,7 @@ export default function Component() {
   const [showSplash, setShowSplash] = useState(true);
   const resetTimeoutRef = useRef(null);
   const router = useRouter();
-  const imgWooebe = "https://res.cloudinary.com/dclzsvu62/image/upload/v1752518264/bodas-woowbe/lfjqtdc3l9n35icxuwv2.png"
+  const imgWooebe = "https://res.cloudinary.com/dclzsvu62/image/upload/v1753670788/bodas-woowbe/z9rajz3y6q53pkbdkfsa.png"
 
   const handleLogoClick = (e) => {
     e.preventDefault();
@@ -113,10 +113,10 @@ export default function Component() {
       <div className="josefin-sans flex flex-col min-h-screen bg-white text-black">
         {/* Header */}
         <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-          <div className="container flex h-16 items-center justify-between px-2 sm:px-4">
+          <div className="container mx-auto max-w-7xl flex h-16 items-center justify-between px-4">
             <div className="flex items-center gap-3 sm:gap-6">
               <Link href="/" className="flex items-center space-x-2" onClick={handleLogoClick}>
-                <div className="h-8 w-8 rounded-lg  flex items-center justify-center">
+                <div className="h-8 w-8 rounded-lg flex items-center justify-center">
                   <Image
                     src={imgWooebe}
                     alt="Logo Woowbe"
@@ -180,8 +180,8 @@ export default function Component() {
           {/* Hero Section */}
 
           <section className="relative overflow-hidden bg-gradient-to-br from-white via-gray-100 to-gray-200 py-8 md:py-24" id="home">
-            <div className="container px-2 sm:px-4 md:px-6">
-              <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
+            <div className="container mx-auto max-w-5xl px-4">
+              <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px] items-center">
                 <div className="flex flex-col justify-center space-y-4">
                   <div className="space-y-2">
                     <Badge className="w-fit bg-black text-white text-xs sm:text-base">
@@ -231,8 +231,8 @@ export default function Component() {
 
           {/* Features Section */}
           <section className="py-8 md:py-24 bg-gray-100" id="aboutus">
-            <div className="container px-2 sm:px-4 md:px-6">
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="container mx-auto max-w-5xl px-4">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 items-center">
                 <div className="flex flex-col items-center text-center space-y-2">
                   <div className="h-12 w-12 rounded-lg bg-black flex items-center justify-center">
                     <Truck className="h-6 w-6 text-white" />
@@ -268,7 +268,7 @@ export default function Component() {
           {/* Products Section */}
 
           <section className="py-8 md:py-24" id="services">
-            <div className="container px-2 sm:px-4 md:px-6">
+            <div className="container mx-auto max-w-5xl px-4">
               <div className="flex flex-col items-center justify-center space-y-4 text-center">
                 <div className="space-y-2">
                   <h2 className="text-2xl font-bold tracking-tighter sm:text-5xl">Servicios destacados</h2>
@@ -397,7 +397,7 @@ export default function Component() {
           </section>
 
           <section className="py-8 md:py-24 bg-gray-900" id="contact">
-            <div className="container px-2 sm:px-4 md:px-6">
+            <div className="container mx-auto max-w-2xl px-4">
               <div className="flex flex-col items-center justify-center space-y-4 text-center">
                 <div className="space-y-2">
                   <h2 className="text-2xl font-bold tracking-tighter sm:text-4xl text-white">
@@ -407,7 +407,7 @@ export default function Component() {
                   Si quieres que te contactemos dejanos tu email y te enviaremos las mejores ofertas y novedades de nuestros productos.
                 </p>
               </div>
-              <div className="w-full max-w-sm space-y-2">
+              <div className="w-full max-w-sm mx-auto space-y-2">
                 <form className="flex flex-col gap-2 sm:flex-row">
                   <Input type="email" placeholder="Tu email" className="flex-1 bg-white text-black" />
                   <Button type="submit" variant="secondary" className="w-full sm:w-auto bg-black text-white hover:bg-gray-800">
@@ -421,7 +421,7 @@ export default function Component() {
 
         {/* Footer */}
         <footer className="border-t bg-gray-100">
-          <div className="container px-2 sm:px-4 md:px-6 py-8 md:py-12">
+          <div className="container mx-auto max-w-7xl px-4 py-8 md:py-12">
             <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
               <div className="space-y-4">
                 <div className="flex items-center space-x-2">
