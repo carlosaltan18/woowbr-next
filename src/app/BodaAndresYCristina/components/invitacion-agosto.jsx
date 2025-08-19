@@ -59,7 +59,7 @@ export function InvitacionBoda() {
     const calendario = "https://res.cloudinary.com/dclzsvu62/image/upload/v1755611870/bodas-woowbe/al9xjqxi9kmtiridnkce.png"
     return (
         <div
-            //style={{ fontFamily: 'Josefin Sans' }}
+            style={{ fontFamily: 'Josefin Sans' }}
             className="font-josefin min-h-screen flex flex-col items-center justify-center px-0"
         >
             <div
