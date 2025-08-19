@@ -186,7 +186,8 @@ export function InvitacionBoda() {
                     href="https://tu-link-de-confirmacion.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-6 px-8 py-4 bg-black text-white rounded-2xl shadow-lg hover:bg-gray-800 transition duration-300"
+                    className="mt-4 px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 
+             text-sm sm:text-base md:text-lg lg:text-xl bg-black text-white rounded-2xl shadow-lg hover:bg-gray-800 transition duration-300"
                 >
                     Confirmar Asistencia
                 </a>
@@ -202,7 +203,7 @@ export function InvitacionBoda() {
             </div>
             {/* Sección 7*/}
             <div className="w-full min-h-[50rem] md:h-[70vh] lg:h-[85rem] flex flex-col items-center justify-center text-center bg-[#ffff] text-black">
-                <Image src={calendario} alt="Logo" width={150} height={60} className="mb-6 w-16 mx-auto mt-5" />
+                <Image src={calendario} alt="Logo" width={150} height={60} className="mb-6 mx-auto w-16 sm:w-16 md:w-25 lg:w-25 h-auto mt-5" />
                 <h1 className="text-2xl lg:text-4xl xl:text-5xl font-semibold mb-15 text-[#1D2F23]" >
                     Calendario
                 </h1>
@@ -213,11 +214,13 @@ export function InvitacionBoda() {
                     href="https://tu-link-de-confirmacion.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-4 px-4 py-2 bg-[#1D2F23] text-white rounded-3xl shadow-lg hover:bg-gray-800 transition duration-300"
+                    className="mt-4 px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 
+             text-sm sm:text-base md:text-lg lg:text-xl 
+             bg-[#1D2F23] text-white rounded-3xl shadow-lg 
+             hover:bg-gray-800 transition duration-300"
                 >
                     Calendario
                 </a>
-
                 <div className="h-[8rem] text-lg font-light max-w-md mx-auto"></div>
                 <div className="flex flex-col items-center justify-center text-center p-6">
                     <h2 className="text-1xl lg:text-3xl font-semibold mb-4">
