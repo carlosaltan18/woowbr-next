@@ -4,7 +4,8 @@ import { AuthProvider } from "@/hooks/useAuth.js";
 
 const josefin = Josefin_Sans({
   subsets: ["latin"],
-  weight: ["400", "700"], // Ajusta los pesos según lo que realmente uses
+  weight: ["100", "200", "300", "400", "500", "600", "700"], // los pesos que usas
+  variable: "--font-josefin",
 });
 
 export const metadata = {
@@ -18,7 +19,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className={`${josefin.variable} antialiased`}>
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
