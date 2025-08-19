@@ -21,7 +21,7 @@ export function InvitacionBoda() {
     });
 
     useEffect(() => {
-        const fechaBoda = new Date("2025-12-05T12:00:00"); // 📅 Cambia aquí la fecha y hora exacta de la boda
+        const fechaBoda = new Date("2025-12-05T18:00:00"); // 📅 Cambia aquí la fecha y hora exacta de la boda
 
         const intervalo = setInterval(() => {
             const ahora = new Date();
@@ -211,7 +211,7 @@ export function InvitacionBoda() {
                     No olvides guardar la fecha de <br />nuestra boda en tu calendario.
                 </p>
                 <a
-                    href="https://tu-link-de-confirmacion.com"
+                    href="https://www.google.com/calendar/render?action=TEMPLATE&text=Boda+de+Cristina+y+Andrés&dates=20251206T000000Z/20251206T050000Z&details=¡Acompáñanos+a+celebrar+este+día+tan+especial!&location=Cabaña+Suiza,+Km20.8+Carretera+Interamericana,+Guatemala"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-4 px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 
