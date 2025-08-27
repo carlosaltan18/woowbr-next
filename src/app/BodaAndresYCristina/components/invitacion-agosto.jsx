@@ -10,9 +10,35 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
+import { toast, Toaster } from "react-hot-toast";
 
 
 export function InvitacionBoda() {
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isSubmitting },
+        reset,
+    } = useForm();
+
+    const onSubmit = async (data) => {
+        try {
+            const res = await fetch("/api/registrarInvitado/registrar", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            });
+
+            if (!res.ok) throw new Error("Error al enviar los datos");
+
+            toast.success("Datos enviados correctamente");
+            reset(); // limpia el formulario
+        } catch (err) {
+            toast.error("Hubo un problema al enviar el formulario");
+            console.error(err);
+        }
+    };
+
     const [tiempoRestante, setTiempoRestante] = useState({
         dias: 0,
         horas: 0,
@@ -60,12 +86,13 @@ export function InvitacionBoda() {
     const botella = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141616/bodas-woowbe/at9eqdskwknzrrddfwgq.png"
     const vestimenta = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141617/bodas-woowbe/c2cpdm3z3azfwwoqlyip.png"
     const etiqueta = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141617/bodas-woowbe/nqzfb4czbxvat2fgkmyf.png"
-    const laurel = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141616/bodas-woowbe/dopbcsk0qkrogm6w7jfo.png"    
+    const laurel = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141616/bodas-woowbe/dopbcsk0qkrogm6w7jfo.png"
     return (
         <div
             style={{ fontFamily: 'Josefin Sans' }}
             className="font-josefin min-h-screen flex flex-col items-center justify-center px-0"
         >
+            <Toaster />
             <div
                 className="w-full min-h-[40rem] h-[45rem] md:h-[50vh] lg:h-[60vh] flex flex-col justify-between text-white p-4"
                 style={{
@@ -142,7 +169,7 @@ export function InvitacionBoda() {
             </div>
 
             {/* Sección 5 - Participación */}
-            <div className="w-full h-[65rem] flex flex-col items-center justify-center text-center p-8 bg-[#FFFF] text-black">
+            <div className="w-full min-h-[65rem] md:h-[70vh] lg:h-[85rem] flex flex-col items-center justify-center text-center p-8 bg-[#FFFF] text-black">
                 <Image src={laurel} alt="laurel" width={30} height={20} className="w-10 mx-auto" />
                 <h2 className="pt-6 text-2xl lg:text-4xl xl:text-5xl font-light mb-4 leading-loose">
                     <span className='font-bold'>DRESS CODE</span>  <br /> <span className='text-sm'>CÓDIGO DE VESTIMENTA</span>
@@ -206,15 +233,19 @@ export function InvitacionBoda() {
                 </h2>
 
                 {/* Botón de confirmación */}
-                <a
-                    href="https://tu-link-de-confirmacion.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                <button
+                    onClick={() => {
+                        document.getElementById("formulario-asistencia")?.scrollIntoView({
+                            behavior: "smooth",
+                        });
+                    }}
                     className="mt-4 px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 
-             text-sm sm:text-base md:text-lg lg:text-xl bg-black text-white rounded-2xl shadow-lg hover:bg-gray-800 transition duration-300"
+             text-sm sm:text-base md:text-lg lg:text-xl 
+             bg-black text-white rounded-2xl shadow-lg 
+             hover:bg-gray-800 transition duration-300"
                 >
                     Confirmar Asistencia
-                </a>
+                </button>
             </div>
             {/* Sección 7 */}
             <div className="w-full min-h-[55rem] md:h-[70vh] lg:h-[85rem] flex flex-col items-center justify-center text-center bg-[#4c6454] text-black">
@@ -235,7 +266,7 @@ export function InvitacionBoda() {
                     No olvides guardar la fecha de <br />nuestra boda en tu calendario.
                 </p>
                 <a
-                    href="https://tu-link-de-confirmacion.com"
+                    href="https://www.google.com/calendar/render?action=TEMPLATE&text=Boda+de+Cristina+y+Andrés&dates=20251206T000000Z/20251206T050000Z&details=¡Acompáñanos+a+celebrar+este+día+tan+especial!&location=Cabaña+Suiza,+Km20.8+Carretera+Interamericana,+Guatemala"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-4 px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 
@@ -260,37 +291,51 @@ export function InvitacionBoda() {
 
             </div>
 
+            <div id="formulario-asistencia" className="w-full py-20 px-4 text-center bg-[#F5F5F5] text-black">
+                <h2 className="text-2xl lg:text-4xl font-semibold mb-6">Confirma tu asistencia</h2>
+                <form onSubmit={handleSubmit(onSubmit)} className="max-w-md mx-auto space-y-6">
+                    <div className="text-left">
+                        <Label htmlFor="nombre">Nombre completo</Label>
+                        <Input id="nombre" type="text" {...register("nombre")} placeholder="Tu nombre" />
+                        {errors.nombre && <p className="text-red-500 text-sm mt-1">{errors.nombre.message}</p>}
+                    </div>
 
+                    <div className="text-left">
+                        <Label htmlFor="telefono">Teléfono</Label>
+                        <Input id="telefono" type="text" {...register("telefono")} placeholder="Tu teléfono" />
+                        {errors.telefono && <p className="text-red-500 text-sm mt-1">{errors.telefono.message}</p>}
+                    </div>
 
-            {/* Formulario de registro 
-      <div className="w-full py-20 px-4 text-center bg-[#F5F5F5] text-black">
-        <h2 className="text-2xl lg:text-4xl font-semibold mb-6">Confirma tu asistencia</h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="max-w-md mx-auto space-y-6">
-          <div className="text-left">
-            <Label htmlFor="nombre">Nombre completo</Label>
-            <Input id="nombre" type="text" {...register("nombre")} placeholder="Tu nombre" />
-            {errors.nombre && <p className="text-red-500 text-sm mt-1">{errors.nombre.message}</p>}
-          </div>
+                    <div className="text-left">
+                        <Label htmlFor="confirmacion">Confirmación</Label>
+                        <div className="flex items-center gap-4 mt-2">
+                            <label className="flex items-center gap-2">
+                                <input
+                                    type="radio"
+                                    value="Sí asistiré"
+                                    {...register("confirmacion", { required: "Por favor selecciona una opción" })}
+                                    className="form-radio"
+                                />
+                                Sí asistiré
+                            </label>
+                            <label className="flex items-center gap-2">
+                                <input
+                                    type="radio"
+                                    value="No podré ir"
+                                    {...register("confirmacion", { required: "Por favor selecciona una opción" })}
+                                    className="form-radio"
+                                />
+                                No podré ir
+                            </label>
+                        </div>
+                        {errors.confirmacion && <p className="text-red-500 text-sm mt-1">{errors.confirmacion.message}</p>}
+                    </div>
 
-          <div className="text-left">
-            <Label htmlFor="telefono">Teléfono</Label>
-            <Input id="telefono" type="text" {...register("telefono")} placeholder="Tu teléfono" />
-            {errors.telefono && <p className="text-red-500 text-sm mt-1">{errors.telefono.message}</p>}
-          </div>
-
-          <div className="text-left">
-            <Label htmlFor="confirmacion">Confirmación</Label>
-            <Input id="confirmacion" type="text" {...register("confirmacion")} placeholder="Sí asistiré / No podré ir" />
-            {errors.confirmacion && <p className="text-red-500 text-sm mt-1">{errors.confirmacion.message}</p>}
-          </div>
-
-          <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? "Enviando..." : "Enviar"}
-          </Button>
-        </form>
-      </div>
-        */}
-
+                    <Button type="submit" disabled={isSubmitting} className="w-full">
+                        {isSubmitting ? "Enviando..." : "Enviar"}
+                    </Button>
+                </form>
+            </div>
         </div>
     );
 }

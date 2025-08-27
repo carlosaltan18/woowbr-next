@@ -1,7 +1,38 @@
-export default function handler(req, res) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method not allowed" });
+import { google } from "googleapis";
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Método no permitido" });
   }
 
-  res.status(200).json({ message: "hola" });
+  try {
+    const { nombre, telefono, confirmacion } = req.body;
+
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        type: "service_account",
+        project_id: process.env.GCP_PROJECT_ID,
+        private_key: process.env.GCP_PRIVATE_KEY.replace(/\\n/g, "\n"),
+        client_email: process.env.GCP_CLIENT_EMAIL,
+      },
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+    });
+
+    const sheets = google.sheets({ version: "v4", auth });
+    const spreadsheetId = "1Wl2jPaYE30X3S7vAJrvrG00vRvE33gPBzcLPIgKEshQ";
+
+    await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: "invitados!A:E",
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: [[nombre, telefono, confirmacion, new Date().toLocaleString()]],
+      },
+    });
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Error al guardar datos" });
+  }
 }
