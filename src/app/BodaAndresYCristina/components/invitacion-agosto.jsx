@@ -2,18 +2,89 @@
 
 import Image from 'next/image';
 import { BrandWaze } from 'tabler-icons-react';
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useState, useEffect } from "react";
 import { toast, Toaster } from "react-hot-toast";
-
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import Slider from "react-slick";
+import { Volume, VolumeOff } from 'tabler-icons-react'; 
 
 export function InvitacionBoda() {
+    const [isPlaying, setIsPlaying] = useState(true); // Estado para controlar el audio
+    const audioRef = useRef(null); // Referencia al elemento de audio
+    const [scrollProgress, setScrollProgress] = useState(0); 
+
+    const toggleAudio = () => {
+        if (isPlaying) {
+            audioRef.current.pause();
+        } else {
+            audioRef.current.play();
+        }
+        setIsPlaying(!isPlaying);
+    };
+useEffect(() => {
+        const handleScroll = () => {
+            const scrollTop = window.scrollY;
+            const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const progress = (scrollTop / windowHeight) * 100;
+            setScrollProgress(progress);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+    const fotos = [
+        "https://res.cloudinary.com/dclzsvu62/image/upload/v1756603869/bodas-woowbe/vidjsw0dbcqmofzhby1i.jpg",
+        "https://res.cloudinary.com/dclzsvu62/image/upload/v1756603866/bodas-woowbe/srplewougho8u54nbsle.jpg",
+        "https://res.cloudinary.com/dclzsvu62/image/upload/v1756603912/bodas-woowbe/bxsfriphhzgytktn1uzh.jpg",
+        "https://res.cloudinary.com/dclzsvu62/image/upload/v1756603950/bodas-woowbe/odmvpwe5xc8k0zcygmyh.jpg",
+        "https://res.cloudinary.com/dclzsvu62/image/upload/v1756603949/bodas-woowbe/sotozl5rrkq1wtzgbidr.jpg",
+        "https://res.cloudinary.com/dclzsvu62/image/upload/v1756603909/bodas-woowbe/zkuciujbcnbbq5qptor4.jpg",
+    ];
+
+    const [fotoPrincipal, setFotoPrincipal] = useState(fotos[0]);
+
+    const sliderSettings = {
+        dots: false,
+        infinite: true,
+        speed: 500,
+        slidesToShow: 3,
+        slidesToScroll: 1,
+        centerMode: false,
+        focusOnSelect: true,
+        arrows: false,
+        responsive: [
+            {
+                breakpoint: 1280,
+                settings: {
+                    slidesToShow: 3,
+                },
+            },
+            {
+                breakpoint: 1024,
+                settings: {
+                    slidesToShow: 2,
+                },
+            },
+            {
+                breakpoint: 768,
+                settings: {
+                    slidesToShow: 2,
+                },
+            },
+            {
+                breakpoint: 640,
+                settings: {
+                    slidesToShow: 1,
+                },
+            },
+        ],
+    };
+
     const {
         register,
         handleSubmit,
@@ -47,8 +118,7 @@ export function InvitacionBoda() {
     });
 
     useEffect(() => {
-        const fechaBoda = new Date("2025-12-05T18:00:00"); // 📅 Cambia aquí la fecha y hora exacta de la boda
-
+        const fechaBoda = new Date("2025-12-05T12:00:00"); 
         const intervalo = setInterval(() => {
             const ahora = new Date();
             const diferencia = fechaBoda.getTime() - ahora.getTime();
@@ -87,11 +157,35 @@ export function InvitacionBoda() {
     const vestimenta = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141617/bodas-woowbe/c2cpdm3z3azfwwoqlyip.png"
     const etiqueta = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141617/bodas-woowbe/nqzfb4czbxvat2fgkmyf.png"
     const laurel = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141616/bodas-woowbe/dopbcsk0qkrogm6w7jfo.png"
+    const fotoGaleriaPrincipal = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756603909/bodas-woowbe/zkuciujbcnbbq5qptor4.jpg"
     return (
         <div
             style={{ fontFamily: 'Josefin Sans' }}
-            className="font-josefin min-h-screen flex flex-col items-center justify-center px-0"
+            className="font-josefin min-h-screen flex flex-col items-center justify-center px-0 relative"
         >
+            {/* Barra de progreso */}
+            <div
+                style={{ width: `${scrollProgress}%` }}
+                className="fixed top-0 left-0 h-3 bg-[#4F6E71] z-50"
+            ></div>
+            {/* Bocina para controlar el audio */}
+            <div className="absolute top-4 right-4 z-50 cursor-pointer">
+                <Volume
+                    size={32}
+                    onClick={toggleAudio}
+                    className={`text-gray-800 hover:text-gray-600 ${
+                        isPlaying ? 'opacity-100' : 'opacity-50'
+                    }`}
+                />
+            </div>
+
+            {/* Audio de fondo */}
+            <audio ref={audioRef} autoPlay loop>
+                <source src="./BodaCristina.mp3" type="audio/mpeg" />
+                Tu navegador no soporta el elemento de audio.
+            </audio>
+
+            {/* Contenido de la invitación */}
             <Toaster />
             <div
                 className="w-full min-h-[40rem] h-[45rem] md:h-[50vh] lg:h-[60vh] flex flex-col justify-between text-white p-4"
@@ -116,6 +210,16 @@ export function InvitacionBoda() {
             {/* Seccción de presentación de los novios*/}
             <div className="w-full h-[50rem] flex flex-col items-center justify-center text-center p-8 bg-[#4F6E71] text-white">
                 <Image src={noviosPres} alt="noviosPres" width={100} height={80} className="mb-2 w-100 mx-auto" />
+                <br />
+                <div className="flex flex-col items-center justify-center text-center p-6">
+                    <h2 className="text-1xl lg:text-3xl font-semibold mb-4">
+                        <span className="text-3xl">Faltan:</span> <br />
+                        <span className="text-1xl">Boda de Cristina y Andrés</span>
+                    </h2>
+                    <p className="text-2xl lg:text-6xl font-medium text-white">
+                        {tiempoRestante.dias} días {tiempoRestante.horas}h : {tiempoRestante.minutos}m : {tiempoRestante.segundos}s
+                    </p>
+                </div>
             </div>
 
 
@@ -152,9 +256,12 @@ export function InvitacionBoda() {
                     <span className='font-bold'>FECHA</span>  <br /> DICIEMBRE 5, 2025
 
                 </h2>
-                <div className="w-[30%] sm:w-[35%] md:w-[40%] lg:w-[45%] xl:w-[50%] min-h-[3px] bg-white mx-auto opacity-60" />
+                <div className="w-[90%] sm:w-[90%] md:w-[90%] lg:w-[90%] xl:w-[90%] min-h-[3px] bg-white mx-auto opacity-60" />
                 <h2 className="pt-10 text-2xl lg:text-4xl xl:text-5xl font-light mb-4 leading-loose">
-                    <span className='font-bold'>Ceremonia y Recepción</span>  <br /> 18:00 hrs. <br /> <span className='font-semibold'>Cabaña Suiza</span>
+                    <span className='font-bold'>Ceremonia</span>  <br /> 18:00 - 19:00 hrs. <br /> <span className=''>Capilla San Benito Abad en Cabaña Suiza</span>
+                </h2>
+                <h2 className="pt-10 text-2xl lg:text-4xl xl:text-5xl font-light mb-4 leading-loose">
+                    <span className='font-bold'>Recepción</span>  <br /> 19:30 - 00:30 hrs. <br /> <span className='font-semibold'> Plaza Helvetia Cabaña Suiza</span>
                 </h2>
                 <div className="pt-10">
                     <a
@@ -165,6 +272,7 @@ export function InvitacionBoda() {
                     >
                         <BrandWaze size={48} className="mx-auto" />
                     </a>
+                    <h4>Cabaña Suiza</h4>
                 </div>
             </div>
 
@@ -172,7 +280,7 @@ export function InvitacionBoda() {
             <div className="w-full min-h-[65rem] md:h-[70vh] lg:h-[85rem] flex flex-col items-center justify-center text-center p-8 bg-[#FFFF] text-black">
                 <Image src={laurel} alt="laurel" width={30} height={20} className="w-10 mx-auto" />
                 <h2 className="pt-6 text-2xl lg:text-4xl xl:text-5xl font-light mb-4 leading-loose">
-                    <span className='font-bold'>DRESS CODE</span>  <br /> <span className='text-sm'>CÓDIGO DE VESTIMENTA</span>
+                    <span className='font-bold'>DRESS CODE</span>
 
                 </h2>
                 <Image src={etiqueta} alt="etiqueta" width={80} height={80} className="mb-4 w-60 mx-auto" />
@@ -188,20 +296,23 @@ export function InvitacionBoda() {
 
                 <p className="text-1xl lg:text-2xl xl:text-3xl font-light mb-4">
                     Aunque nos gustan mucho los niños, <br />
-                    esta será una celebración <br />
-                    sólo para adultos.
+                    esta será una celebración sólo para adultos,  <br />
+                    por lo que agradeceremos tu comprensión.
                 </p>
             </div>
 
             <div className="w-full py-25 px-4 text-center bg-[#627552] text-white">
                 <Image src={regalo} alt="Logo" width={50} height={40} className="mb-6 w-20 mx-auto" />
                 <h2 className="pt-10 text-2xl lg:text-4xl xl:text-5xl font-thin mb-4 ">
-                    <span className='font-bold'>MESA DE REGALOS</span> <br />  <br /> Nuestro mejor regalo eres tú, pero si <br />quieres tener un detalle
+                    <span className='font-bold'>MESA DE REGALOS</span> <br />  <br />  Nuestro mejor regalo es poder celebrar contigo, <br />pero si quieres
+                    tener un detalle te dejamos estas opciones:
 
                 </h2>
-                <h2 className="pt-10 text-2xl lg:text-4xl xl:text-5xl font-thin mb-4 leading-loose">
-                    <span className='font-bold'>BANCO INDUSTRIAL</span>  <br /> Cristina Ramírez/Andrés Sierra <br /> Cuenta Monetaria GTQ <br /> XXXXXXX
+                <h2 className="pt-10 text-1xl lg:text-4xl xl:text-5xl font-thin mb-4 leading-loose">
+                    <span className='text-2xl lg:text-3xl xl:text-5xl font-bold'>BANCO INDUSTRIAL</span>  <br /> <span className='text-1xl lg:text-2xl xl:text-4xl font-light'>CUENTA MONETARIA Bl-2061390247 <br /> RAMIREZ RODAS CRISTINA IRENE <br />0/ SIERRA B</span>
                 </h2>
+                <h2 className="pt-10 text-2xl lg:text-4xl xl:text-5xl font-thin mb-4 leading-loose">
+                    <span className='font-bold'>BODAS CEMACO</span></h2>
                 <div className="pt-10">
                     <a
                         href="https://www.bing.com/search?q=cemaco&cvid=b2c3f5e424394854a83c239ad5868d45&gs_lcrp=EgRlZGdlKgYIABBFGDkyBggAEEUYOdIBBzkxOWowajmoAgiwAgE&FORM=ANAB01&PC=ASTS"
@@ -216,7 +327,7 @@ export function InvitacionBoda() {
 
 
             {/* Sección 6 */}
-            <div className="w-full min-h-[55rem] md:h-[60rem] lg:h-[85rem] flex flex-col items-center justify-center text-center bg-[#ffff] text-black">
+            <div className="w-full min-h-[75rem] md:h-[85rem] lg:h-[95rem] flex flex-col items-center justify-center text-center bg-[#ffff] text-black">
                 <Image src={asistencia} alt="Logo" width={100} height={60} className="mb-6 w-25 mx-auto" />
 
                 <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold mb-15">
@@ -227,27 +338,63 @@ export function InvitacionBoda() {
                     Tu presencia es muy importante <br /> para nosotros, por favor confírmanos <br /> tu asistencia llenando el siguiente formulario.
                 </h2>
                 <br />
-                <h2 className="text-1xl lg:text-3xl xl:text-4xl font-light mb-4 ">
-                    <span className='font-semibold'>Hemos reservado para ti:</span> <br /><br />
-                    Fecha límite para confirmar: <br /> 2 de noviembre del 2025. <br />1 lugar
+                <h2 className="text-1xl lg:text-3xl xl:text-4xl font-light mb-4 leading-loose">
+                    <span className='font-semibold'>Hemos reservado para ti:</span> <br />
+                    <span><h1 className='text-3xl lg:text-4xl xl:text-5xl font-semibold'>1</h1></span>
+                    <span>Lugar para tí</span> <br />
+                    Fecha límite para confirmar: <br /> 2 de noviembre del 2025. <br /> Esperamos contar con tu asistencia.
                 </h2>
 
-                {/* Botón de confirmación */}
-                <button
-                    onClick={() => {
-                        document.getElementById("formulario-asistencia")?.scrollIntoView({
-                            behavior: "smooth",
-                        });
-                    }}
-                    className="mt-4 px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 
+                <div id="formulario-asistencia" className="w-full py-10 px-4 text-center bg-[#FFFF] text-black">
+                    <h2 className="text-2xl lg:text-4xl font-semibold mb-6">Confirma tu asistencia</h2>
+                    <form onSubmit={handleSubmit(onSubmit)} className="max-w-md mx-auto space-y-6">
+                        <div className="text-left">
+                            <Label htmlFor="nombre">Nombre completo</Label>
+                            <Input id="nombre" type="text" {...register("nombre")} placeholder="Tu nombre" />
+                            {errors.nombre && <p className="text-red-500 text-sm mt-1">{errors.nombre.message}</p>}
+                        </div>
+
+                        <div className="text-left">
+                            <Label htmlFor="telefono">Teléfono</Label>
+                            <Input id="telefono" type="text" {...register("telefono")} placeholder="Tu teléfono" />
+                            {errors.telefono && <p className="text-red-500 text-sm mt-1">{errors.telefono.message}</p>}
+                        </div>
+
+                        <div className="text-left">
+                            <Label htmlFor="confirmacion">Confirmación</Label>
+                            <div className="flex items-center gap-4 mt-2">
+                                <label className="flex items-center gap-2">
+                                    <input
+                                        type="radio"
+                                        value="Sí asistiré"
+                                        {...register("confirmacion", { required: "Por favor selecciona una opción" })}
+                                        className="form-radio"
+                                    />
+                                    Sí asistiré
+                                </label>
+                                <label className="flex items-center gap-2">
+                                    <input
+                                        type="radio"
+                                        value="No podré ir"
+                                        {...register("confirmacion", { required: "Por favor selecciona una opción" })}
+                                        className="form-radio"
+                                    />
+                                    No podré ir
+                                </label>
+                            </div>
+                            {errors.confirmacion && <p className="text-red-500 text-sm mt-1">{errors.confirmacion.message}</p>}
+                        </div>
+
+                        <Button type="submit" disabled={isSubmitting} className="mt-4 px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 
              text-sm sm:text-base md:text-lg lg:text-xl 
              bg-black text-white rounded-2xl shadow-lg 
-             hover:bg-gray-800 transition duration-300"
-                >
-                    Confirmar Asistencia
-                </button>
+             hover:bg-gray-800 transition duration-300">
+                            {isSubmitting ? "Enviando..." : "Confirmar Asistencia"}
+                        </Button>
+                    </form>
+                </div>
             </div>
-            {/* Sección 7 */}
+            {/* Sección etinerario 
             <div className="w-full min-h-[55rem] md:h-[70vh] lg:h-[85rem] flex flex-col items-center justify-center text-center bg-[#4c6454] text-black">
                 <Image src={ubicacion} alt="Logo" width={150} height={60} className="mb-6 w-13 mx-auto" />
                 <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold mb-15 text-white" >
@@ -255,14 +402,14 @@ export function InvitacionBoda() {
                 </h1>
                 <Image src={etinerario} alt="Logo" width={150} height={60} className="mb-6 mx-auto w-60 sm:w-52 md:w-60 lg:w-90 h-auto" />
 
-            </div>
+            </div>*/}
             {/* Sección 7*/}
-            <div className="w-full min-h-[50rem] md:h-[70vh] lg:h-[85rem] flex flex-col items-center justify-center text-center bg-[#ffff] text-black">
+            <div className="w-full min-h-[50rem] md:h-[70vh] lg:h-[85rem] flex flex-col items-center justify-center text-center bg-[#4c6454] text-white">
                 <Image src={calendario} alt="Logo" width={150} height={60} className="mb-6 mx-auto w-16 sm:w-16 md:w-25 lg:w-25 h-auto mt-5" />
-                <h1 className="text-2xl lg:text-4xl xl:text-5xl font-semibold mb-15 text-[#1D2F23]" >
+                <h1 className="text-2xl lg:text-4xl xl:text-5xl font-semibold mb-15 " >
                     Calendario
                 </h1>
-                <p className="text-00.5xl lg:text-4xl xl:text-5xl font-semibold mb-15 text-[#1D2F23]">
+                <p className="text-00.5xl lg:text-4xl xl:text-5xl font-semibold mb-15 ">
                     No olvides guardar la fecha de <br />nuestra boda en tu calendario.
                 </p>
                 <a
@@ -276,66 +423,45 @@ export function InvitacionBoda() {
                 >
                     Calendario
                 </a>
-                <div className="h-[8rem] text-lg font-light max-w-md mx-auto"></div>
-                <div className="flex flex-col items-center justify-center text-center p-6">
-                    <h2 className="text-1xl lg:text-3xl font-semibold mb-4">
-                        <span className="text-3xl">Faltan:</span> <br />
-                        <span className="text-1xl">Boda de Cristina y Andrés</span>
-                    </h2>
-                    <p className="text-3xl lg:text-6xl font-medium text-black">
-                        {tiempoRestante.dias} días {tiempoRestante.horas}h : {tiempoRestante.minutos}m : {tiempoRestante.segundos}s
-                    </p>
+                {/*<div className="h-[8rem] text-lg font-light max-w-md mx-auto"></div>*/}
+
+                {/* Galería de fotos */}
+                <div className="w-full py-10 px-4 text-center bg-[#4c6454]">
+                    {/* Foto principal */}
+                    <div className="mb-8">
+                        <Image
+                            src={fotoPrincipal}
+                            alt="Foto principal"
+                            width={800}
+                            height={500}
+                            className="rounded-xl shadow-lg mx-auto object-cover"
+                        />
+                    </div>
+
+                    {/* Carrusel con fotos alineadas */}
+                    <div className="w-full max-w-md sm:max-w-15xl md:max-w-4xl lg:max-w-3xl xl:max-w-2xl mx-auto">
+                        <Slider {...sliderSettings}>
+                            {fotos.map((foto, i) => (
+                                <div key={i} className="px-2">
+                                    {/* Contenedor con tamaño fijo */}
+                                    <div className="aspect-square max-w-[250px] mx-auto flex items-center justify-center bg-gray-200 rounded-lg overflow-hidden">
+                                        <Image
+                                            src={foto}
+                                            alt={`Foto ${i + 1}`}
+                                            width={500}
+                                            height={500}
+                                            className="object-cover w-full h-full cursor-pointer rounded-lg shadow-md hover:opacity-80 transition"
+                                            onClick={() => setFotoPrincipal(foto)}
+                                        />
+                                    </div>
+
+                                </div>
+                            ))}
+                        </Slider>
+                    </div>
                 </div>
-
-
-
             </div>
 
-            <div id="formulario-asistencia" className="w-full py-20 px-4 text-center bg-[#F5F5F5] text-black">
-                <h2 className="text-2xl lg:text-4xl font-semibold mb-6">Confirma tu asistencia</h2>
-                <form onSubmit={handleSubmit(onSubmit)} className="max-w-md mx-auto space-y-6">
-                    <div className="text-left">
-                        <Label htmlFor="nombre">Nombre completo</Label>
-                        <Input id="nombre" type="text" {...register("nombre")} placeholder="Tu nombre" />
-                        {errors.nombre && <p className="text-red-500 text-sm mt-1">{errors.nombre.message}</p>}
-                    </div>
-
-                    <div className="text-left">
-                        <Label htmlFor="telefono">Teléfono</Label>
-                        <Input id="telefono" type="text" {...register("telefono")} placeholder="Tu teléfono" />
-                        {errors.telefono && <p className="text-red-500 text-sm mt-1">{errors.telefono.message}</p>}
-                    </div>
-
-                    <div className="text-left">
-                        <Label htmlFor="confirmacion">Confirmación</Label>
-                        <div className="flex items-center gap-4 mt-2">
-                            <label className="flex items-center gap-2">
-                                <input
-                                    type="radio"
-                                    value="Sí asistiré"
-                                    {...register("confirmacion", { required: "Por favor selecciona una opción" })}
-                                    className="form-radio"
-                                />
-                                Sí asistiré
-                            </label>
-                            <label className="flex items-center gap-2">
-                                <input
-                                    type="radio"
-                                    value="No podré ir"
-                                    {...register("confirmacion", { required: "Por favor selecciona una opción" })}
-                                    className="form-radio"
-                                />
-                                No podré ir
-                            </label>
-                        </div>
-                        {errors.confirmacion && <p className="text-red-500 text-sm mt-1">{errors.confirmacion.message}</p>}
-                    </div>
-
-                    <Button type="submit" disabled={isSubmitting} className="w-full">
-                        {isSubmitting ? "Enviando..." : "Enviar"}
-                    </Button>
-                </form>
-            </div>
         </div>
     );
 }
