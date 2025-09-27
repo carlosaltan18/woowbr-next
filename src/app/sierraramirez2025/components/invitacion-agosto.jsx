@@ -11,12 +11,13 @@ import { toast, Toaster } from "react-hot-toast";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
-import { Volume, VolumeOff } from 'tabler-icons-react'; 
+import { Volume, VolumeOff } from 'tabler-icons-react';
 
 export function InvitacionBoda() {
     const [isPlaying, setIsPlaying] = useState(true); // Estado para controlar el audio
     const audioRef = useRef(null); // Referencia al elemento de audio
-    const [scrollProgress, setScrollProgress] = useState(0); 
+    const [scrollProgress, setScrollProgress] = useState(0);
+    const [isFormVisible, setIsFormVisible] = useState(false); // Estado para manejar la visibilidad del formulario
 
     const toggleAudio = () => {
         if (isPlaying) {
@@ -26,7 +27,7 @@ export function InvitacionBoda() {
         }
         setIsPlaying(!isPlaying);
     };
-useEffect(() => {
+    useEffect(() => {
         const handleScroll = () => {
             const scrollTop = window.scrollY;
             const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
@@ -38,12 +39,15 @@ useEffect(() => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
     const fotos = [
+        "https://res.cloudinary.com/dclzsvu62/image/upload/v1758951408/bodas-woowbe/wlqjvnyseoab1coni5bq.jpg",
         "https://res.cloudinary.com/dclzsvu62/image/upload/v1756603869/bodas-woowbe/vidjsw0dbcqmofzhby1i.jpg",
         "https://res.cloudinary.com/dclzsvu62/image/upload/v1756603866/bodas-woowbe/srplewougho8u54nbsle.jpg",
         "https://res.cloudinary.com/dclzsvu62/image/upload/v1756603912/bodas-woowbe/bxsfriphhzgytktn1uzh.jpg",
         "https://res.cloudinary.com/dclzsvu62/image/upload/v1756603950/bodas-woowbe/odmvpwe5xc8k0zcygmyh.jpg",
         "https://res.cloudinary.com/dclzsvu62/image/upload/v1756603949/bodas-woowbe/sotozl5rrkq1wtzgbidr.jpg",
         "https://res.cloudinary.com/dclzsvu62/image/upload/v1756603909/bodas-woowbe/zkuciujbcnbbq5qptor4.jpg",
+        "https://res.cloudinary.com/dclzsvu62/image/upload/v1758951408/bodas-woowbe/qzkcwncloyus5diayvzl.jpg",
+
     ];
 
     const [fotoPrincipal, setFotoPrincipal] = useState(fotos[0]);
@@ -104,6 +108,7 @@ useEffect(() => {
 
             toast.success("Datos enviados correctamente");
             reset(); // limpia el formulario
+            setIsFormVisible(false); // Oculta el formulario después de enviarlo
         } catch (err) {
             toast.error("Hubo un problema al enviar el formulario");
             console.error(err);
@@ -118,7 +123,7 @@ useEffect(() => {
     });
 
     useEffect(() => {
-        const fechaBoda = new Date("2025-12-05T12:00:00"); 
+        const fechaBoda = new Date("2025-12-05T12:00:00");
         const intervalo = setInterval(() => {
             const ahora = new Date();
             const diferencia = fechaBoda.getTime() - ahora.getTime();
@@ -144,14 +149,14 @@ useEffect(() => {
     }, []);
     const cristinaYAndres = "https://res.cloudinary.com/dclzsvu62/image/upload/v1754591327/bodas-woowbe/mbkho0hgpj6nk5d6nhw0.png";
     const noviosPres = "https://res.cloudinary.com/dclzsvu62/image/upload/v1754592461/bodas-woowbe/qsb6j8obe1bozozzkowl.png";
-    const logoCA = "https://res.cloudinary.com/dclzsvu62/image/upload/v1754591438/bodas-woowbe/uqpe1e73edzinn3wlx23.png";
+    const logoCA = "https://res.cloudinary.com/dclzsvu62/image/upload/v1758949126/bodas-woowbe/ek7posiwl9jlqgoi1tg0.png";
     const rings = "https://res.cloudinary.com/dclzsvu62/image/upload/v1754617619/bodas-woowbe/uvbyhplyhq2xgruj8rox.png";
     const dressCode = "https://res.cloudinary.com/dclzsvu62/image/upload/v1754689414/bodas-woowbe/bwpf9tqvqqu08affsxji.png";
-    const cemaco = "https://res.cloudinary.com/dclzsvu62/image/upload/v1754690226/bodas-woowbe/kowhqhfrn3oerkn5wtvh.png";
+    const money = "https://res.cloudinary.com/dclzsvu62/image/upload/v1758949126/bodas-woowbe/hlcolowzykymkvy7fb9l.png";
     const regalo = "https://res.cloudinary.com/dclzsvu62/image/upload/v1754690281/bodas-woowbe/rlykjuccwkyszilrglin.png";
     const asistencia = "https://res.cloudinary.com/dclzsvu62/image/upload/v1755609043/bodas-woowbe/gokxkcfg4plke4sezbb5.png"
-    const ubicacion = "https://res.cloudinary.com/dclzsvu62/image/upload/v1755611337/bodas-woowbe/zyypb9e9v7ma2fevse6j.png"
-    const etinerario = "https://res.cloudinary.com/dclzsvu62/image/upload/v1755611474/bodas-woowbe/cngzghsvkgxc50yymrdw.png"
+    const numero = "https://res.cloudinary.com/dclzsvu62/image/upload/v1758949126/bodas-woowbe/mtz4zjuzd7fhz4xbnkdz.png"
+    const fechaNovios = "https://res.cloudinary.com/dclzsvu62/image/upload/v1758949125/bodas-woowbe/rmyc5zzmdbrzjbeeanbp.png"
     const calendario = "https://res.cloudinary.com/dclzsvu62/image/upload/v1755611870/bodas-woowbe/al9xjqxi9kmtiridnkce.png"
     const botella = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141616/bodas-woowbe/at9eqdskwknzrrddfwgq.png"
     const vestimenta = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141617/bodas-woowbe/c2cpdm3z3azfwwoqlyip.png"
@@ -173,9 +178,8 @@ useEffect(() => {
                 <Volume
                     size={32}
                     onClick={toggleAudio}
-                    className={`text-gray-800 hover:text-gray-600 ${
-                        isPlaying ? 'opacity-100' : 'opacity-50'
-                    }`}
+                    className={`text-gray-800 hover:text-gray-600 ${isPlaying ? 'opacity-100' : 'opacity-50'
+                        }`}
                 />
             </div>
 
@@ -196,6 +200,7 @@ useEffect(() => {
                     backgroundRepeat: "no-repeat",
                 }}
             >
+
                 <div className="
                     flex-grow flex items-start justify-start w-full
                         md:items-center md:justify-center
@@ -203,13 +208,23 @@ useEffect(() => {
                     <div className="w-full flex flex-col items-start md:items-center">
                     </div>
                 </div>
+                <h2 className='text-black font-bold text-center'>Ahora permanecen la fe, <br />
+                    la esperanza y el amor… <br /> y el mayor de ellos es el amor.</h2>
+                <h4 className='text-black font-light text-sm text-center'>Corintios 13:13</h4>
+                <br />
+                <br />
                 <Image src={logoCA} alt="Logo" width={200} height={60} className="mb-6 w-50 mx-auto" />
             </div>
 
 
             {/* Seccción de presentación de los novios*/}
             <div className="w-full h-[50rem] flex flex-col items-center justify-center text-center p-8 bg-[#4F6E71] text-white">
-                <Image src={noviosPres} alt="noviosPres" width={100} height={80} className="mb-2 w-100 mx-auto" />
+                <h2 className="text-2xl lg:text-4xl xl:text-5xl font-semibold mb-4 leading-loose">
+                    Cristina & Andrés
+                </h2>
+                {/* Div vacío para separar componentes */}
+                <div className="w-full h-19"></div>
+                <Image src={fechaNovios} alt="noviosPres" width={100} height={80} className="mb-2 w-100 mx-auto" />
                 <br />
                 <div className="flex flex-col items-center justify-center text-center p-6">
                     <h2 className="text-1xl lg:text-3xl font-semibold mb-4">
@@ -244,7 +259,7 @@ useEffect(() => {
 
             {/* Sección 4 - Información */}
             <div className="w-full py-25 px-4 text-center bg-[#1D2F23] text-white">
-                <p className="text-2xl lg:text-3xl xl:text-4xl font-thin mb-4 pb-20 ">
+                <p className="text-1xl lg:text-3xl xl:text-4xl font-thin mb-4 pb-15 ">
                     Nos embarcamos en una nueva <br />
                     aventura, y nuestra boda no estaría<br />
                     completa sin la presencia de nuestros<br />
@@ -252,16 +267,15 @@ useEffect(() => {
                     estes allí con nosotros.
                 </p>
                 <Image src={rings} alt="Logo" width={200} height={60} className="mb-6 w-50 mx-auto" />
-                <h2 className="pt-10 text-2xl lg:text-4xl xl:text-5xl font-light mb-4 leading-loose">
-                    <span className='font-bold'>FECHA</span>  <br /> DICIEMBRE 5, 2025
-
+                {/**   <div className="w-[90%] sm:w-[90%] md:w-[90%] lg:w-[90%] xl:w-[90%] min-h-[3px] bg-white mx-auto opacity-60" />
+ */}
+                <h2 className="pt-10 text-2xl lg:text-4xl xl:text-5xl font-light mb-4 ">
+                    <span className='font-bold'>CEREMONIA RELIGIOSA</span> <br /><br /> <span className='text-sm font-light'>Capilla San Benito Abad , ubicada en Cabaña Suiza</span>
+                    <br /> <span className='text-sm font-light'>18:00 - 19:00 hrs. </span>
                 </h2>
-                <div className="w-[90%] sm:w-[90%] md:w-[90%] lg:w-[90%] xl:w-[90%] min-h-[3px] bg-white mx-auto opacity-60" />
-                <h2 className="pt-10 text-2xl lg:text-4xl xl:text-5xl font-light mb-4 leading-loose">
-                    <span className='font-bold'>Ceremonia</span>  <br /> 18:00 - 19:00 hrs. <br /> <span className=''>Capilla San Benito Abad en Cabaña Suiza</span>
-                </h2>
-                <h2 className="pt-10 text-2xl lg:text-4xl xl:text-5xl font-light mb-4 leading-loose">
-                    <span className='font-bold'>Recepción</span>  <br /> 19:30 - 00:30 hrs. <br /> <span className='font-semibold'> Plaza Helvetia Cabaña Suiza</span>
+                <h2 className="pt-10 text-2xl lg:text-4xl xl:text-5xl font-light mb-4 ">
+                    <span className='font-bold'>RECEPCIÓN</span>  <br /><br /><span className='text-sm font-light'> Plaza Helvetia Cabaña Suiza</span>
+                    <br /> <span className='text-sm font-light'>19:30 - 00:30 hrs. </span>
                 </h2>
                 <div className="pt-10">
                     <a
@@ -303,26 +317,19 @@ useEffect(() => {
 
             <div className="w-full py-25 px-4 text-center bg-[#627552] text-white">
                 <Image src={regalo} alt="Logo" width={50} height={40} className="mb-6 w-20 mx-auto" />
-                <h2 className="pt-10 text-2xl lg:text-4xl xl:text-5xl font-thin mb-4 ">
-                    <span className='font-bold'>MESA DE REGALOS</span> <br />  <br />  Nuestro mejor regalo es poder celebrar contigo, <br />pero si quieres
-                    tener un detalle te dejamos estas opciones:
+                <h2 className="pt-10 text-1xl lg:text-3xl xl:text-4xl font-thin mb-4 ">
+                    <span className='font-bold text-2xl lg:text-4xl xl:text-5xl'>MESA DE REGALOS</span> <br />  <br />  <span className='text-1xl lg:text-3xl xl:text-4xl'>Nuestro mejor regalo es poder celebrar contigo, <br />pero si quieres
+                    tener un detalle te dejamos estas opciones:</span>
 
                 </h2>
                 <h2 className="pt-10 text-1xl lg:text-4xl xl:text-5xl font-thin mb-4 leading-loose">
-                    <span className='text-2xl lg:text-3xl xl:text-5xl font-bold'>BANCO INDUSTRIAL</span>  <br /> <span className='text-1xl lg:text-2xl xl:text-4xl font-light'>CUENTA MONETARIA Bl-2061390247 <br /> RAMIREZ RODAS CRISTINA IRENE <br />0/ SIERRA B</span>
+                    <span className='text-2xl lg:text-3xl xl:text-5xl font-semibold'>BANCO INDUSTRIAL</span>  <br /><br /> <span className='text-1xl lg:text-2xl xl:text-4xl font-thin'>Ramirez Rodas Cristina Irene O / Sierra B <br /> Cuenta Monetaria GTQ <br /><span className='text-1xl lg:text-2xl xl:text-4xl font-bold'>2061390247</span></span>
                 </h2>
-                <h2 className="pt-10 text-2xl lg:text-4xl xl:text-5xl font-thin mb-4 leading-loose">
-                    <span className='font-bold'>BODAS CEMACO</span></h2>
                 <div className="pt-10">
-                    <a
-                        href="https://www.bing.com/search?q=cemaco&cvid=b2c3f5e424394854a83c239ad5868d45&gs_lcrp=EgRlZGdlKgYIABBFGDkyBggAEEUYOdIBBzkxOWowajmoAgiwAgE&FORM=ANAB01&PC=ASTS"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block text-white hover:opacity-80 transition"
-                    >
-                        <Image src={cemaco} alt="Logo" width={50} height={40} className="mb-6 w-15 mx-auto" />
-                    </a>
+                    <Image src={money} alt="Logo" width={50} height={40} className="mb-6 w-15 mx-auto" />
                 </div>
+                <h2 className="pt-10 text-2xl lg:text-4xl xl:text-5xl font-thin leading-loose">
+                    <span className='font-bold'>EFECTIVO</span></h2>
             </div>
 
 
@@ -339,59 +346,75 @@ useEffect(() => {
                 </h2>
                 <br />
                 <h2 className="text-1xl lg:text-3xl xl:text-4xl font-light mb-4 leading-loose">
-                    <span className='font-semibold'>Hemos reservado para ti:</span> <br />
-                    <span><h1 className='text-3xl lg:text-4xl xl:text-5xl font-semibold'>1</h1></span>
-                    <span>Lugar para tí</span> <br />
-                    Fecha límite para confirmar: <br /> 2 de noviembre del 2025. <br /> Esperamos contar con tu asistencia.
+                    <span className='font-bold'>Hemos reservado</span> <br />
+                <Image src={numero} alt="Logo" width={100} height={60} className=" w-25 mx-auto" />
+                <span className='font-bold'>para ti</span> <br />
+                    <span className='font-thin'>Fecha límite para confirmar: <br /> 2 de noviembre del 2025. <br /> </span>
                 </h2>
 
                 <div id="formulario-asistencia" className="w-full py-10 px-4 text-center bg-[#FFFF] text-black">
                     <h2 className="text-2xl lg:text-4xl font-semibold mb-6">Confirma tu asistencia</h2>
-                    <form onSubmit={handleSubmit(onSubmit)} className="max-w-md mx-auto space-y-6">
-                        <div className="text-left">
-                            <Label htmlFor="nombre">Nombre completo</Label>
-                            <Input id="nombre" type="text" {...register("nombre")} placeholder="Tu nombre" />
-                            {errors.nombre && <p className="text-red-500 text-sm mt-1">{errors.nombre.message}</p>}
-                        </div>
-
-                        <div className="text-left">
-                            <Label htmlFor="telefono">Teléfono</Label>
-                            <Input id="telefono" type="text" {...register("telefono")} placeholder="Tu teléfono" />
-                            {errors.telefono && <p className="text-red-500 text-sm mt-1">{errors.telefono.message}</p>}
-                        </div>
-
-                        <div className="text-left">
-                            <Label htmlFor="confirmacion">Confirmación</Label>
-                            <div className="flex items-center gap-4 mt-2">
-                                <label className="flex items-center gap-2">
-                                    <input
-                                        type="radio"
-                                        value="Sí asistiré"
-                                        {...register("confirmacion", { required: "Por favor selecciona una opción" })}
-                                        className="form-radio"
-                                    />
-                                    Sí asistiré
-                                </label>
-                                <label className="flex items-center gap-2">
-                                    <input
-                                        type="radio"
-                                        value="No podré ir"
-                                        {...register("confirmacion", { required: "Por favor selecciona una opción" })}
-                                        className="form-radio"
-                                    />
-                                    No podré ir
-                                </label>
-                            </div>
-                            {errors.confirmacion && <p className="text-red-500 text-sm mt-1">{errors.confirmacion.message}</p>}
-                        </div>
-
-                        <Button type="submit" disabled={isSubmitting} className="mt-4 px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 
-             text-sm sm:text-base md:text-lg lg:text-xl 
-             bg-black text-white rounded-2xl shadow-lg 
-             hover:bg-gray-800 transition duration-300">
-                            {isSubmitting ? "Enviando..." : "Confirmar Asistencia"}
+                    {!isFormVisible ? (
+                        <Button
+                            onClick={() => setIsFormVisible(true)} // Muestra el formulario
+                            className="mt-4 px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 
+          text-sm sm:text-base md:text-lg lg:text-xl 
+          bg-black text-white rounded-2xl shadow-lg 
+          hover:bg-gray-800 transition duration-300"
+                        >
+                            Confirmar asistencia
                         </Button>
-                    </form>
+                    ) : (
+                        <form onSubmit={handleSubmit(onSubmit)} className="max-w-md mx-auto space-y-6">
+                            <div className="text-left">
+                                <Label htmlFor="nombre">Nombre completo</Label>
+                                <Input id="nombre" type="text" {...register("nombre", { required: "Este campo es obligatorio" })} placeholder="Tu nombre" />
+                                {errors.nombre && <p className="text-red-500 text-sm mt-1">{errors.nombre.message}</p>}
+                            </div>
+
+                            <div className="text-left">
+                                <Label htmlFor="telefono">Teléfono</Label>
+                                <Input id="telefono" type="text" {...register("telefono", { required: "Este campo es obligatorio" })} placeholder="Tu teléfono" />
+                                {errors.telefono && <p className="text-red-500 text-sm mt-1">{errors.telefono.message}</p>}
+                            </div>
+
+                            <div className="text-left">
+                                <Label htmlFor="confirmacion">Confirmación</Label>
+                                <div className="flex items-center gap-4 mt-2">
+                                    <label className="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            value="Sí asistiré"
+                                            {...register("confirmacion", { required: "Por favor selecciona una opción" })}
+                                            className="form-radio"
+                                        />
+                                        Sí asistiré
+                                    </label>
+                                    <label className="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            value="No podré ir"
+                                            {...register("confirmacion", { required: "Por favor selecciona una opción" })}
+                                            className="form-radio"
+                                        />
+                                        No podré ir
+                                    </label>
+                                </div>
+                                {errors.confirmacion && <p className="text-red-500 text-sm mt-1">{errors.confirmacion.message}</p>}
+                            </div>
+
+                            <Button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="mt-4 px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 
+            text-sm sm:text-base md:text-lg lg:text-xl 
+            bg-black text-white rounded-2xl shadow-lg 
+            hover:bg-gray-800 transition duration-300"
+                            >
+                                {isSubmitting ? "Enviando..." : "Enviar confirmación"}
+                            </Button>
+                        </form>
+                    )}
                 </div>
             </div>
             {/* Sección etinerario 
@@ -404,7 +427,7 @@ useEffect(() => {
 
             </div>*/}
             {/* Sección 7*/}
-            <div className="w-full min-h-[50rem] md:h-[70vh] lg:h-[85rem] flex flex-col items-center justify-center text-center bg-[#4c6454] text-white">
+            <div className="w-full min-h-[50rem] md:h-[90vh] lg:h-[120rem] flex flex-col items-center justify-center text-center bg-[#4c6454] text-white">
                 <Image src={calendario} alt="Logo" width={150} height={60} className="mb-6 mx-auto w-16 sm:w-16 md:w-25 lg:w-25 h-auto mt-5" />
                 <h1 className="text-2xl lg:text-4xl xl:text-5xl font-semibold mb-15 " >
                     Calendario

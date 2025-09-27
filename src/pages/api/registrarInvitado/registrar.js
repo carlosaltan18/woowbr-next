@@ -19,11 +19,11 @@ export default async function handler(req, res) {
     });
 
     const sheets = google.sheets({ version: "v4", auth });
-    const spreadsheetId = "1Wl2jPaYE30X3S7vAJrvrG00vRvE33gPBzcLPIgKEshQ";
+    const spreadsheetId = "11vK0zvmTI4pchp07Jer3XMR9ej_bP6XqStrhIrgFxeM";
 
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: "invitados!A:E",
+      range: "Hoja 1!A:E",
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [[nombre, telefono, confirmacion, new Date().toLocaleString()]],
