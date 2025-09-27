@@ -156,7 +156,7 @@ export function InvitacionBoda() {
     const regalo = "https://res.cloudinary.com/dclzsvu62/image/upload/v1754690281/bodas-woowbe/rlykjuccwkyszilrglin.png";
     const asistencia = "https://res.cloudinary.com/dclzsvu62/image/upload/v1755609043/bodas-woowbe/gokxkcfg4plke4sezbb5.png"
     const numero = "https://res.cloudinary.com/dclzsvu62/image/upload/v1758949126/bodas-woowbe/mtz4zjuzd7fhz4xbnkdz.png"
-    const fechaNovios = "https://res.cloudinary.com/dclzsvu62/image/upload/v1758949125/bodas-woowbe/rmyc5zzmdbrzjbeeanbp.png"
+    const fechaNovios = "https://res.cloudinary.com/dclzsvu62/image/upload/v1758956661/bodas-woowbe/yszs35jqtpwchtt0j1xn.png"
     const calendario = "https://res.cloudinary.com/dclzsvu62/image/upload/v1755611870/bodas-woowbe/al9xjqxi9kmtiridnkce.png"
     const botella = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141616/bodas-woowbe/at9eqdskwknzrrddfwgq.png"
     const vestimenta = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141617/bodas-woowbe/c2cpdm3z3azfwwoqlyip.png"
@@ -224,7 +224,7 @@ export function InvitacionBoda() {
                 </h2>
                 {/* Div vacío para separar componentes */}
                 <div className="w-full h-19"></div>
-                <Image src={fechaNovios} alt="noviosPres" width={100} height={80} className="mb-2 w-100 mx-auto" />
+                <Image src={fechaNovios} alt="noviosPres" width={100} height={80} className="mb-2 w-60 mx-auto" />
                 <br />
                 <div className="flex flex-col items-center justify-center text-center p-6">
                     <h2 className="text-1xl lg:text-3xl font-semibold mb-4">
@@ -249,7 +249,7 @@ export function InvitacionBoda() {
                     Con la bendición de Dios y <br /> la de nuestra familia
                 </h2>
                 <h2 className="text-2xl lg:text-3xl xl:text-4xl font-light mb-4 leading-loose">
-                    <span className='font-semibold'>Padres de la novia:</span> <br /> Mynor Estuardo Ramírez Godoy <br /> Irene ValeskaRodas Figueredo
+                    <span className='font-semibold'>Padres de la novia:</span> <br /> Mynor Estuardo Ramírez Godoy <br /> Irene Valeska Rodas Figueredo
                 </h2>
                 <br />
                 <h2 className="text-2xl lg:text-3xl xl:text-4xl font-light mb-4 leading-loose">
