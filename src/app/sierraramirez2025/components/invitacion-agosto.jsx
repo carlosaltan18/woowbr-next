@@ -12,12 +12,16 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
 import { Volume, VolumeOff } from 'tabler-icons-react';
+import { useSearchParams } from "next/navigation";
 
 export function InvitacionBoda() {
     const [isPlaying, setIsPlaying] = useState(true); // Estado para controlar el audio
     const audioRef = useRef(null); // Referencia al elemento de audio
     const [scrollProgress, setScrollProgress] = useState(0);
     const [isFormVisible, setIsFormVisible] = useState(false); // Estado para manejar la visibilidad del formulario
+
+    const searchParams = useSearchParams();
+    const invitado = searchParams.get("invitado");
 
     const toggleAudio = () => {
         if (isPlaying) {
@@ -156,12 +160,13 @@ export function InvitacionBoda() {
     const regalo = "https://res.cloudinary.com/dclzsvu62/image/upload/v1754690281/bodas-woowbe/rlykjuccwkyszilrglin.png";
     const asistencia = "https://res.cloudinary.com/dclzsvu62/image/upload/v1755609043/bodas-woowbe/gokxkcfg4plke4sezbb5.png"
     const numero = "https://res.cloudinary.com/dclzsvu62/image/upload/v1758949126/bodas-woowbe/mtz4zjuzd7fhz4xbnkdz.png"
-    const fechaNovios = "https://res.cloudinary.com/dclzsvu62/image/upload/v1758956661/bodas-woowbe/yszs35jqtpwchtt0j1xn.png"
+    const fechaNovios = "https://res.cloudinary.com/dclzsvu62/image/upload/v1758957008/bodas-woowbe/iiumprjjn4nlhdac9ssy.png"
     const calendario = "https://res.cloudinary.com/dclzsvu62/image/upload/v1755611870/bodas-woowbe/al9xjqxi9kmtiridnkce.png"
     const botella = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141616/bodas-woowbe/at9eqdskwknzrrddfwgq.png"
     const vestimenta = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141617/bodas-woowbe/c2cpdm3z3azfwwoqlyip.png"
     const etiqueta = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141617/bodas-woowbe/nqzfb4czbxvat2fgkmyf.png"
     const laurel = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141616/bodas-woowbe/dopbcsk0qkrogm6w7jfo.png"
+    const numeroUno = "https://res.cloudinary.com/dclzsvu62/image/upload/v1759203153/bodas-woowbe/kyeog6wdeaxmdmbshkvw.png"
     const fotoGaleriaPrincipal = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756603909/bodas-woowbe/zkuciujbcnbbq5qptor4.jpg"
     return (
         <div
@@ -208,9 +213,9 @@ export function InvitacionBoda() {
                     <div className="w-full flex flex-col items-start md:items-center">
                     </div>
                 </div>
-                <h2 className='text-black font-bold text-center'>Ahora permanecen la fe, <br />
-                    la esperanza y el amor… <br /> y el mayor de ellos es el amor.</h2>
-                <h4 className='text-black font-light text-sm text-center'>Corintios 13:13</h4>
+                <h2 className='text-black font-bold text-center'>Por encima de todo, <br />
+                    vistanse de amor <br /> Que es el vínculo perfecto.</h2>
+                <h4 className='text-black font-light text-sm text-center'>Col 3:14-15</h4>
                 <br />
                 <br />
                 <Image src={logoCA} alt="Logo" width={200} height={60} className="mb-6 w-50 mx-auto" />
@@ -229,11 +234,13 @@ export function InvitacionBoda() {
                 <div className="flex flex-col items-center justify-center text-center p-6">
                     <h2 className="text-1xl lg:text-3xl font-semibold mb-4">
                         <span className="text-3xl">Faltan:</span> <br />
-                        <span className="text-1xl">Boda de Cristina y Andrés</span>
                     </h2>
-                    <p className="text-2xl lg:text-6xl font-medium text-white">
+                    <p className="text-3xl lg:text-6xl font-medium text-white">
                         {tiempoRestante.dias} días {tiempoRestante.horas}h : {tiempoRestante.minutos}m : {tiempoRestante.segundos}s
                     </p>
+                    <h2 className="text-1xl lg:text-3xl font-semibold mb-4">
+                        Boda de Cristina y Andrés
+                    </h2>
                 </div>
             </div>
 
@@ -279,9 +286,14 @@ export function InvitacionBoda() {
                 </h2>
                 <div className="pt-10">
                     <a
-                        href="https://www.waze.com/es/live-map/directions/zona-1,-mixco?navigate=yes&to=place.ws.row.41014680.none"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href="waze://?ll=14.616129,-90.618389&navigate=yes"
+                        onClick={(e) => {
+                            // Fallback a web si la app no está instalada
+                            setTimeout(() => {
+                                window.location.href =
+                                    "https://www.waze.com/es/live-map/directions?to=ll.14.616129%2C-90.618389";
+                            }, 500);
+                        }}
                         className="inline-block text-white hover:opacity-80 transition"
                     >
                         <BrandWaze size={48} className="mx-auto" />
@@ -318,18 +330,19 @@ export function InvitacionBoda() {
             <div className="w-full py-25 px-4 text-center bg-[#627552] text-white">
                 <Image src={regalo} alt="Logo" width={50} height={40} className="mb-6 w-20 mx-auto" />
                 <h2 className="pt-10 text-1xl lg:text-3xl xl:text-4xl font-thin mb-4 ">
-                    <span className='font-bold text-2xl lg:text-4xl xl:text-5xl'>MESA DE REGALOS</span> <br />  <br />  <span className='text-1xl lg:text-3xl xl:text-4xl'>Nuestro mejor regalo es poder celebrar contigo, <br />pero si quieres
-                    tener un detalle te dejamos estas opciones:</span>
+                    <span className='font-bold text-2xl lg:text-4xl xl:text-5xl'>MESA DE REGALOS</span> <br />  <br />  <span className='text-1xl lg:text-3xl xl:text-4xl'>Nuestro mayor regalo es poder celebrar junto a ti.<br />Como ya tenemos nuestra casa equipada, si deseas obsequiarnos algo,
+                        agradeceríamos una colaboración monetaria. Recuerda que tu compañía es lo que realmente hará de nuestra boda un momento inolvidable.</span>
 
                 </h2>
                 <h2 className="pt-10 text-1xl lg:text-4xl xl:text-5xl font-thin mb-4 leading-loose">
-                    <span className='text-2xl lg:text-3xl xl:text-5xl font-semibold'>BANCO INDUSTRIAL</span>  <br /><br /> <span className='text-1xl lg:text-2xl xl:text-4xl font-thin'>Ramirez Rodas Cristina Irene O / Sierra B <br /> Cuenta Monetaria GTQ <br /><span className='text-1xl lg:text-2xl xl:text-4xl font-bold'>2061390247</span></span>
+                    <span className='text-2xl lg:text-3xl xl:text-5xl font-semibold'>BANCO INDUSTRIAL</span>  <br /><br /> <span className='text-1xl lg:text-2xl xl:text-4xl font-thin'>Ramirez Rodas Cristina Irene O / sierra búcaro Andrés <br /> Cuenta Monetaria GTQ <br /><span className='text-1xl lg:text-2xl xl:text-4xl font-bold'>2061390247</span></span>
                 </h2>
+                <h2 className='text-2xl lg:text-3xl xl:text-5xl font-semibold'> Ó</h2>
                 <div className="pt-10">
                     <Image src={money} alt="Logo" width={50} height={40} className="mb-6 w-15 mx-auto" />
                 </div>
                 <h2 className="pt-10 text-2xl lg:text-4xl xl:text-5xl font-thin leading-loose">
-                    <span className='font-bold'>EFECTIVO</span></h2>
+                    <span className='font-bold'>LLUVIA DE SOBRES</span></h2>
             </div>
 
 
@@ -347,8 +360,16 @@ export function InvitacionBoda() {
                 <br />
                 <h2 className="text-1xl lg:text-3xl xl:text-4xl font-light mb-4 leading-loose">
                     <span className='font-bold'>Hemos reservado</span> <br />
-                <Image src={numero} alt="Logo" width={100} height={60} className=" w-25 mx-auto" />
-                <span className='font-bold'>para ti</span> <br />
+                    <Image
+                        src={invitado === "1"
+                            ? numero
+                            : numeroUno}
+                        alt="Número"
+                        width={100}
+                        height={60}
+                        className="w-25 mx-auto"
+                    />
+                    <span className='font-bold'>para ti</span> <br />
                     <span className='font-thin'>Fecha límite para confirmar: <br /> 2 de noviembre del 2025. <br /> </span>
                 </h2>
 
