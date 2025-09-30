@@ -335,7 +335,7 @@ export function InvitacionBoda() {
 
                 </h2>
                 <h2 className="pt-10 text-1xl lg:text-4xl xl:text-5xl font-thin mb-4 leading-loose">
-                    <span className='text-2xl lg:text-3xl xl:text-5xl font-semibold'>BANCO INDUSTRIAL</span>  <br /><br /> <span className='text-1xl lg:text-2xl xl:text-4xl font-thin'>Ramirez Rodas Cristina Irene O / sierra búcaro Andrés <br /> Cuenta Monetaria GTQ <br /><span className='text-1xl lg:text-2xl xl:text-4xl font-bold'>2061390247</span></span>
+                    <span className='text-2xl lg:text-3xl xl:text-5xl font-semibold'>BANCO INDUSTRIAL</span>  <br /><br /> <span className='text-1xl lg:text-2xl xl:text-4xl font-thin'>Ramirez Rodas Cristina Irene O / Sierra Búcaro Andrés <br /> Cuenta Monetaria GTQ <br /><span className='text-1xl lg:text-2xl xl:text-4xl font-bold'>2061390247</span></span>
                 </h2>
                 <h2 className='text-2xl lg:text-3xl xl:text-5xl font-semibold'> Ó</h2>
                 <div className="pt-10">
@@ -369,7 +369,7 @@ export function InvitacionBoda() {
                         height={60}
                         className="w-25 mx-auto"
                     />
-                    <span className='font-bold'>para ti</span> <br />
+                    <span className='font-bold'> {invitado === "1" ? "Lugares": "Lugar"} para ti</span> <br />
                     <span className='font-thin'>Fecha límite para confirmar: <br /> 2 de noviembre del 2025. <br /> </span>
                 </h2>
 
