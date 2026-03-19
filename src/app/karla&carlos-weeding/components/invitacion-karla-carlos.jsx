@@ -483,7 +483,7 @@ export function InvitacionBoda() {
                     {/* Ícono Waze clickeable */}
                     <div className="flex justify-center mb-3">
                         <a
-                            href="https://waze.com/ul?q=Laguna+Bermeja+Santa+Catarina+Pinula+Guatemala"
+                            href="https://waze.com/ul/h9fxdy53sq"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="hover:scale-110 transition-transform duration-200"
@@ -542,7 +542,6 @@ function InvitadoForm({ index, total, adultos }) {
 
     const [enviado, setEnviado] = useState(false);
 
-    // Determina la etiqueta según si es adulto o niño
     const esAdulto = index < adultos;
     const etiqueta = esAdulto ? `Adulto ${index + 1}` : `Niño ${index + 1 - adultos}`;
 
@@ -551,7 +550,15 @@ function InvitadoForm({ index, total, adultos }) {
             const res = await fetch("/api/registrarInvitado/registrar", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...data, tipo: esAdulto ? "adulto" : "nino" }),
+                body: JSON.stringify({
+                    ...data,
+                    tipo: esAdulto ? "adulto" : "nino",
+                    fechaRegistro: new Date().toLocaleString("es-GT", {
+                        timeZone: "America/Guatemala",
+                        dateStyle: "short",
+                        timeStyle: "medium",
+                    }),
+                }),
             });
 
             if (!res.ok) throw new Error("Error al enviar");
@@ -580,8 +587,10 @@ function InvitadoForm({ index, total, adultos }) {
             </h3>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+
+                {/* Nombre */}
                 <div className="text-left">
-                    <Label htmlFor={`nombre-${index}`}>Nombre completo</Label>
+                    <Label htmlFor={`nombre-${index}`}>Nombre</Label>
                     <Input
                         id={`nombre-${index}`}
                         type="text"
@@ -593,40 +602,40 @@ function InvitadoForm({ index, total, adultos }) {
                     )}
                 </div>
 
+                {/* Apellido */}
                 <div className="text-left">
-                    <Label htmlFor={`telefono-${index}`}>Teléfono</Label>
+                    <Label htmlFor={`apellido-${index}`}>Apellido</Label>
                     <Input
-                        id={`telefono-${index}`}
+                        id={`apellido-${index}`}
                         type="text"
-                        {...register("telefono", { required: "Este campo es obligatorio" })}
-                        placeholder="Tu teléfono"
+                        {...register("apellido", { required: "Este campo es obligatorio" })}
+                        placeholder="Tu apellido"
                     />
-                    {errors.telefono && (
-                        <p className="text-red-400 text-sm mt-1">{errors.telefono.message}</p>
+                    {errors.apellido && (
+                        <p className="text-red-400 text-sm mt-1">{errors.apellido.message}</p>
                     )}
                 </div>
 
+                {/* Confirmación */}
                 <div className="text-left">
                     <Label>Confirmación</Label>
-                    <div className="flex items-center gap-4 mt-2">
-                        <label className="flex items-center gap-2">
-                            <input
-                                type="radio"
-                                value="Sí asistiré"
-                                {...register("confirmacion", { required: "Por favor selecciona una opción" })}
-                                className="form-radio"
-                            />
-                            Sí asistiré
-                        </label>
-                        <label className="flex items-center gap-2">
-                            <input
-                                type="radio"
-                                value="No podré ir"
-                                {...register("confirmacion", { required: "Por favor selecciona una opción" })}
-                                className="form-radio"
-                            />
-                            No podré ir
-                        </label>
+                    <div className="flex flex-col gap-3 mt-2">
+                        {[
+                            "Asistiré a Ceremonia",
+                            "Asistiré a Recepción",
+                            "Asistiré a Ceremonia y Recepción",
+                            "No podré asistir",
+                        ].map((opcion) => (
+                            <label key={opcion} className="flex items-center gap-3 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    value={opcion}
+                                    {...register("confirmacion", { required: "Por favor selecciona una opción" })}
+                                    className="form-radio accent-[#5c6c34] w-4 h-4"
+                                />
+                                <span className="text-sm md:text-base">{opcion}</span>
+                            </label>
+                        ))}
                     </div>
                     {errors.confirmacion && (
                         <p className="text-red-400 text-sm mt-1">{errors.confirmacion.message}</p>

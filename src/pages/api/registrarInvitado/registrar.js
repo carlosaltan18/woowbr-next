@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { nombre, telefono, confirmacion } = req.body;
+    const { nombre, apellido, confirmacion, tipo, fechaRegistro } = req.body;
 
     const auth = new google.auth.GoogleAuth({
       credentials: {
@@ -19,16 +19,16 @@ export default async function handler(req, res) {
     });
 
     const sheets = google.sheets({ version: "v4", auth });
-    const spreadsheetId = "1DSbeBxZ5v6j-thq6UsXWYstzUsWSZMAe4c4WYCuLiY4";
+    const spreadsheetId = "1I1bqJqXfzH8lAG0CPcmQ97T5KR8yXE1lAjVYwOjdyD8";
 
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: "Hoja 1!A:E",
+      range: "Hoja 1!A:F",
       valueInputOption: "USER_ENTERED",
       requestBody: {
-        values: [[nombre, telefono, confirmacion, new Date().toLocaleString()]],
+        values: [[nombre, apellido, confirmacion, tipo, fechaRegistro]],
       },
-    });
+    })
 
     return res.status(200).json({ success: true });
   } catch (error) {
