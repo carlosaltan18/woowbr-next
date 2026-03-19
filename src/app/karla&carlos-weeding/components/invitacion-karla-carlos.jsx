@@ -109,7 +109,7 @@ export function InvitacionBoda() {
 
         return () => clearInterval(intervalo);
     }, []);
-    const karlaYCarlos = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773795757/INVITACIÓN_KARLA_ALVIZURES_-01_1_wsuj5x.png";
+    const karlaYCarlos = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773947135/portada_2_utytvt.jpg";
     const logoCA = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773796060/INVITACIÓN_KARLA_ALVIZURES_-07_zblmvt.png";
     const regalo = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773891813/regalo_uodqap.png";
     const numero = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773892384/cuadros-10_oox1kk.png"
@@ -155,7 +155,9 @@ export function InvitacionBoda() {
                     <h1 className={`${greatVibes.className} text-[#b6bdae] text-5xl md:text-7xl lg:text-8xl  mb-3`}>
                         Karla & Carlos
                     </h1>
-                    <div className="mt-3">
+                    <div className="h-40 md:h-50"></div>
+
+                    {/**<div className="mt-3">
                         <Image
                             src={logoCA}
                             alt="Logo"
@@ -163,7 +165,7 @@ export function InvitacionBoda() {
                             height={150}
                             className="rounded-full  rotate-90 -translate-x-6 translate-y-3"
                         />
-                    </div>
+                    </div>**/}
                     <h1 className={`${bodoni.className} text-[#b6bdae] text-2xl md:text-3xl lg:text-5xl absolute bottom-8 md:bottom-12`}>
                         ABRIL 18, 2026
                     </h1>
