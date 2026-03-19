@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     });
 
     const sheets = google.sheets({ version: "v4", auth });
-    const spreadsheetId = "11vK0zvmTI4pchp07Jer3XMR9ej_bP6XqStrhIrgFxeM";
+    const spreadsheetId = "1DSbeBxZ5v6j-thq6UsXWYstzUsWSZMAe4c4WYCuLiY4";
 
     await sheets.spreadsheets.values.append({
       spreadsheetId,

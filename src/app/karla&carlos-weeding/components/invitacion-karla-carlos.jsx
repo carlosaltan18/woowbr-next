@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link'
 import { BrandWaze } from 'tabler-icons-react';
 import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
@@ -27,14 +28,14 @@ const bodoni = Bodoni_Moda({
 });
 
 export function InvitacionBoda() {
-    const [isPlaying, setIsPlaying] = useState(true); // Estado para controlar el audio
-    const audioRef = useRef(null); // Referencia al elemento de audio
+
     const [scrollProgress, setScrollProgress] = useState(0);
     const [isFormVisible, setIsFormVisible] = useState(false); // Estado para manejar la visibilidad del formulario
 
     const searchParams = useSearchParams();
-    const invitado = searchParams.get("invitado");
-
+    const adultos = searchParams.get("adultos") ?? "1";
+    const ninos = searchParams.get("ninos");
+    const totalInvitados = (parseInt(adultos) || 1) + (parseInt(ninos) || 0);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -110,20 +111,20 @@ export function InvitacionBoda() {
     }, []);
     const karlaYCarlos = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773795757/INVITACIÓN_KARLA_ALVIZURES_-01_1_wsuj5x.png";
     const logoCA = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773796060/INVITACIÓN_KARLA_ALVIZURES_-07_zblmvt.png";
-    const rings = "https://res.cloudinary.com/dclzsvu62/image/upload/v1754617619/bodas-woowbe/uvbyhplyhq2xgruj8rox.png";
-    const money = "https://res.cloudinary.com/dclzsvu62/image/upload/v1758949126/bodas-woowbe/hlcolowzykymkvy7fb9l.png";
-    const regalo = "https://res.cloudinary.com/dclzsvu62/image/upload/v1754690281/bodas-woowbe/rlykjuccwkyszilrglin.png";
-    const asistencia = "https://res.cloudinary.com/dclzsvu62/image/upload/v1755609043/bodas-woowbe/gokxkcfg4plke4sezbb5.png"
-    const numero = "https://res.cloudinary.com/dclzsvu62/image/upload/v1758949126/bodas-woowbe/mtz4zjuzd7fhz4xbnkdz.png"
+    const regalo = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773891813/regalo_uodqap.png";
+    const numero = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773892384/cuadros-10_oox1kk.png"
     const muerto = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773805374/INVITACIÓN_KARLA_ALVIZURES_-09_sfrsbc.png"
-    const calendario = "https://res.cloudinary.com/dclzsvu62/image/upload/v1755611870/bodas-woowbe/al9xjqxi9kmtiridnkce.png"
-    const botella = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141616/bodas-woowbe/at9eqdskwknzrrddfwgq.png"
-    const vestimenta = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141617/bodas-woowbe/c2cpdm3z3azfwwoqlyip.png"
-    const etiqueta = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141617/bodas-woowbe/nqzfb4czbxvat2fgkmyf.png"
-    const laurel = "https://res.cloudinary.com/dclzsvu62/image/upload/v1756141616/bodas-woowbe/dopbcsk0qkrogm6w7jfo.png"
-    const numeroUno = "https://res.cloudinary.com/dclzsvu62/image/upload/v1759203153/bodas-woowbe/kyeog6wdeaxmdmbshkvw.png"
+    const vestimenta = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773888935/dress_u5fzam.png"
+    const iglesia = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773895995/Iglesia_ualwgw.png"
+    const numeroUno = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773892710/cuadros-11_hrdhvy.png"
     const fondoSeccion1 = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773803989/INVITACIÓN_KARLA_ALVIZURES_-02_xh1jtz.png"
-
+    const fondoSeccion2 = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773889044/INVITACIÓN_KARLA_ALVIZURES_-03_afd5xx.png"
+    const fondoSeccion3 = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773894367/4_pxx5xb.png"
+    const cemaco = "https://res.cloudinary.com/dclzsvu62/image/upload/v1754690226/bodas-woowbe/kowhqhfrn3oerkn5wtvh.png"
+    const siman = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773895928/logo_siman_cemaco-12_hcggfc.png"
+    const fondSeccion4 = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773896071/INVITACIÓN_KARLA_ALVIZURES_-05_1_s9ulqv.png"
+    const copas = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773895991/brindis_xbfn9i.png"
+    const fotoLuguar = "https://res.cloudinary.com/dclzsvu62/image/upload/v1773896848/WhatsApp_Image_2026-03-18_at_11.04.32_PM_vzoli0.jpg"
     return (
         <div
             style={{ fontFamily: 'Josefin Sans' }}
@@ -242,208 +243,406 @@ export function InvitacionBoda() {
 
 
             {/* Sección 3 */}
-            <div className="w-full min-h-[60rem] md:h-[70vh] lg:h-[85rem] flex flex-col items-center justify-center text-center px-4 bg-[#ffff] text-black">
-                <h2 className="text-2xl lg:text-4xl xl:text-5xl font-semibold mb-4 leading-loose">
-                    Cristina Ramírez Rodas <br /> & <br /> Andrés Sierra Búcaro
-                </h2>
-                <div className="h-[6rem] text-lg font-light max-w-md mx-auto"></div>
-                <h2 className="italic text-2xl lg:text-4xl xl:text-5xl font-light mb-15">
-                    Con la bendición de Dios y <br /> la de nuestra familia
-                </h2>
-                <h2 className="text-2xl lg:text-3xl xl:text-4xl font-light mb-4 leading-loose">
-                    <span className='font-semibold'>Padres de la novia:</span> <br /> Mynor Estuardo Ramírez Godoy <br /> Irene Valeska Rodas Figueredo
-                </h2>
-                <br />
-                <h2 className="text-2xl lg:text-3xl xl:text-4xl font-light mb-4 leading-loose">
-                    <span className='font-semibold'>Tíos del novio:</span> <br /> María Carolina Sierra Luna <br /> Roberto Sierra Luna
-                </h2>
+            <div
+                className="w-full min-h-[100svh] flex flex-col items-center justify-center text-center p-4 md:p-12 text-white relative overflow-hidden"
+                style={{
+                    backgroundImage: `url(${fondoSeccion2})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                }}
+            >
+                <div className={`relative z-10 flex flex-col items-center justify-center w-full max-w-5xl mx-auto ${bodoni.className}`}>
+
+                    <div className={`${bodoni.className} text-2xl md:text-3xl lg:text-4xl italic leading-relaxed max-w-[90%] md:max-w-3xl mx-auto mb-12`}>
+                        <p className='text-black font-semibold italic'>
+                            Vestidos de amor, unidos <br />
+                            por Dios para siempre.
+                        </p>
+                        <h2 className='text-black italic text-xl md:text-2xl lg:text-3xl'>Colosenses.3:11</h2>
+                    </div>
+                    <div className="h-50 md:h-65"></div>
+
+                    <h2 className="pt-3 text-2xl lg:text-4xl xl:text-5xl font-light mb-1 leading-loose text-black italic font-semibold">
+                        DRESS CODE <br />
+
+                    </h2>
+                    <Image src={vestimenta} alt="vestimenta" width={60} height={60} className="mb-2 w-35 mx-auto" />
+                    <h2 className="pt-3 text-2xl lg:text-4xl xl:text-5xl font-light mb-1 leading-loose text-black italic font-semibold">
+                        FORMAL <br />
+
+                    </h2>
+
+
+
+                </div>
             </div>
 
-            {/* Sección 4 - Información */}
-            <div className="w-full py-25 px-4 text-center bg-[#1D2F23] text-white">
-                <p className="text-1xl lg:text-3xl xl:text-4xl font-thin mb-4 pb-15 ">
-                    Nos embarcamos en una nueva <br />
-                    aventura, y nuestra boda no estaría<br />
-                    completa sin la presencia de nuestros<br />
-                    seres queridos, así que queremos que<br />
-                    estes allí con nosotros.
+            {/* Sección 4 - registro */}
+            <div
+                className={`${bodoni.className} w-full min-h-[75rem] md:h-[85rem] lg:h-[95rem] flex flex-col items-center justify-center text-center text-black relative overflow-hidden text-white`}
+                style={{
+                    backgroundImage: `url(${fondoSeccion3})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                }}
+            >
+                <Image src={regalo} alt="Logo" width={100} height={60} className="mb-6 w-10 mx-auto" />
+
+                <p className="text-1xl lg:text-3xl xl:text-4xl  mb-15 italic ">
+                    Agradecemos a Dios por bendecirnos <br />
+                    con este momento tan especial. <br />
+                    Su presencia, cariño y oraciones son el regalo <br />
+                    más valioso para nosotros.
                 </p>
-                <Image src={rings} alt="Logo" width={200} height={60} className="mb-6 w-50 mx-auto" />
-                {/**   <div className="w-[90%] sm:w-[90%] md:w-[90%] lg:w-[90%] xl:w-[90%] min-h-[3px] bg-white mx-auto opacity-60" />
- */}
-                <h2 className="pt-10 text-2xl lg:text-4xl xl:text-5xl font-light mb-4 ">
-                    <span className='font-bold'>CEREMONIA RELIGIOSA</span> <br /><br /> <span className='text-sm font-light'>Capilla San Benito Abad , ubicada en Cabaña Suiza</span>
-                    <br /> <span className='text-sm font-light'>18:00 - 19:00 hrs. </span>
+
+                <p className="text-1xl lg:text-3xl xl:text-4xl  mb-15 italic ">
+                    Si desean acompañarnos con un detalle, <br />
+                    hemos preparado una pequeña lista como <br />
+                    sugerencia opcional. Lo más importante para nosotros <br />
+                    es compartir este día con ustedes
+                </p>
+
+                <h2 className="text-1xl lg:text-3xl xl:text-4xl  mb-15 italic font-light">
+                    LISTA DE REGALOS
                 </h2>
-                <h2 className="pt-10 text-2xl lg:text-4xl xl:text-5xl font-light mb-4 ">
-                    <span className='font-bold'>RECEPCIÓN</span>  <br /><br /><span className='text-sm font-light'> Plaza Helvetia Cabaña Suiza</span>
-                    <br /> <span className='text-sm font-light'>19:30 - 00:30 hrs. </span>
-                </h2>
-                <div className="pt-10">
-                    <a
-                        href="waze://?ll=14.616129,-90.618389&navigate=yes"
-                        onClick={(e) => {
-                            // Fallback a web si la app no está instalada
-                            setTimeout(() => {
-                                window.location.href =
-                                    "https://www.waze.com/es/live-map/directions?to=ll.14.616129%2C-90.618389";
-                            }, 500);
-                        }}
-                        className="inline-block text-white hover:opacity-80 transition"
+                <div className="flex justify-center items-center gap-4 mb-6">
+                    <Link
+                        href="https://www.cemaco.com/list/BodaAmbrocioFajardoyAlvizuresRivera18042026" // Reemplaza con el link exacto de tu lista
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:opacity-80 transition-opacity" // Opcional: un efecto visual al pasar el mouse
                     >
-                        <BrandWaze size={48} className="mx-auto" />
-                    </a>
-                    <h4>Cabaña Suiza</h4>
+                        <Image
+                            src={cemaco}
+                            alt="Logo Cemaco"
+                            width={100}
+                            height={60}
+                            className="w-10"
+                        />
+                    </Link>
+                    <Link
+                        href="https://simangiftregistry.web.app/table/20008918" // Reemplaza con el link exacto de tu lista
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:opacity-80 transition-opacity" // Opcional: un efecto visual al pasar el mouse
+                    >
+                        <Image
+                            src={siman}
+                            alt="Logo siman"
+                            width={100}
+                            height={60}
+                            className="w-15"
+                        />
+                    </Link>
                 </div>
-            </div>
 
-            {/* Sección 5 - Participación */}
-            <div className="w-full min-h-[65rem] md:h-[70vh] lg:h-[85rem] flex flex-col items-center justify-center text-center p-8 bg-[#FFFF] text-black">
-                <Image src={laurel} alt="laurel" width={30} height={20} className="w-10 mx-auto" />
-                <h2 className="pt-6 text-2xl lg:text-4xl xl:text-5xl font-light mb-4 leading-loose">
-                    <span className='font-bold'>DRESS CODE</span>
-
-                </h2>
-                <Image src={etiqueta} alt="etiqueta" width={80} height={80} className="mb-4 w-60 mx-auto" />
-                <h2 className="pt-4 text-2xl lg:text-4xl xl:text-5xl font-light mb-1 leading-loose">
-                    ETIQUETA <br /><span className='font-bold'>FORMAL</span>
-
-                </h2>
-                <Image src={vestimenta} alt="vestimenta" width={80} height={80} className="mb-2 w-60 mx-auto" />
-                <Image src={botella} alt="etiqueta" width={80} height={80} className="mb-4 w-60 mx-auto" />
-                <h2 className="pt-4 text-2xl lg:text-4xl xl:text-5xl font-light mb-1 leading-loose">
-                    <span className='font-thin'>B  O  D  A</span> <br /><span className='font-bold'>SIN NIÑOS</span>
-                </h2>
-
-                <p className="text-1xl lg:text-2xl xl:text-3xl font-light mb-4">
-                    Aunque nos gustan mucho los niños, <br />
-                    esta será una celebración sólo para adultos,  <br />
-                    por lo que agradeceremos tu comprensión.
-                </p>
-            </div>
-
-            <div className="w-full py-25 px-4 text-center bg-[#627552] text-white">
-                <Image src={regalo} alt="Logo" width={50} height={40} className="mb-6 w-20 mx-auto" />
-                <h2 className="pt-10 text-1xl lg:text-3xl xl:text-4xl font-thin mb-4 ">
-                    <span className='font-bold text-2xl lg:text-4xl xl:text-5xl'>MESA DE REGALOS</span> <br />  <br />  <span className='text-1xl lg:text-3xl xl:text-4xl'>Nuestro mayor regalo es poder celebrar junto a ti.<br />Como ya tenemos nuestra casa equipada, si deseas obsequiarnos algo,
-                        agradeceríamos una colaboración monetaria. Recuerda que tu compañía es lo que realmente hará de nuestra boda un momento inolvidable.</span>
-
-                </h2>
-                <h2 className="pt-10 text-1xl lg:text-4xl xl:text-5xl font-thin mb-4 leading-loose">
-                    <span className='text-2xl lg:text-3xl xl:text-5xl font-semibold'>BANCO INDUSTRIAL</span>  <br /><br /> <span className='text-1xl lg:text-2xl xl:text-4xl font-thin'>Ramirez Rodas Cristina Irene O / Sierra Búcaro Andrés <br /> Cuenta Monetaria GTQ <br /><span className='text-1xl lg:text-2xl xl:text-4xl font-bold'>2061390247</span></span>
-                </h2>
-                <h2 className='text-2xl lg:text-3xl xl:text-5xl font-semibold'> Ó</h2>
-                <div className="pt-10">
-                    <Image src={money} alt="Logo" width={50} height={40} className="mb-6 w-15 mx-auto" />
-                </div>
-                <h2 className="pt-10 text-2xl lg:text-4xl xl:text-5xl font-thin leading-loose">
-                    <span className='font-bold'>LLUVIA DE SOBRES</span></h2>
-            </div>
-
-
-            {/* Sección 6 */}
-            <div className="w-full min-h-[75rem] md:h-[85rem] lg:h-[95rem] flex flex-col items-center justify-center text-center bg-[#ffff] text-black">
-                <Image src={asistencia} alt="Logo" width={100} height={60} className="mb-6 w-25 mx-auto" />
-
-                <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold mb-15">
-                    ASISTENCIA
-                </h1>
-
-                <h2 className="text-1xl lg:text-3xl xl:text-4xl font-light mb-4">
-                    Tu presencia es muy importante <br /> para nosotros, por favor confírmanos <br /> tu asistencia llenando el siguiente formulario.
-                </h2>
                 <br />
-                <h2 className="text-1xl lg:text-3xl xl:text-4xl font-light mb-4 leading-loose">
-                    <span className='font-bold'>Hemos reservado</span> <br />
-                    <Image
-                        src={invitado === "1"
-                            ? numero
-                            : numeroUno}
-                        alt="Número"
-                        width={100}
-                        height={60}
-                        className="w-25 mx-auto"
-                    />
-                    <span className='font-bold'> {invitado === "1" ? "Lugares" : "Lugar"} para ti</span> <br />
-                    <span className='font-thin'>Fecha límite para confirmar: <br /> 2 de noviembre del 2025. <br /> </span>
+                <h2 className={`${bodoni.className} text-1xl text-white lg:text-3xl xl:text-4xl font-light mb-4 leading-loose italic text-center`}>
+                    <span>Tenemos reservado <br /> un lugar para ti</span> <br />
+
+                    <div className="flex justify-center items-center my-6">
+
+                        {ninos ? (
+                            /* CASO: adultos + niños → imagen con DOS cuadros */
+                            <div className="relative inline-block">
+                                <Image
+                                    src={numero}
+                                    alt="Lugares"
+                                    width={300}
+                                    height={120}
+                                    className="w-64 md:w-80 mx-auto"
+                                />
+                                {/* Números encima de cada cuadro */}
+                                <div className="absolute inset-0 flex justify-between items-center px-11 md:px-14">                                    {/* Cuadro izquierdo - Adultos */}
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-3xl md:text-4xl font-extrabold text-[#ffff] drop-shadow-md">
+                                            {adultos}
+                                        </span>
+                                        <span className="text-xs md:text-sm font-light text-white tracking-widest mt-1">
+                                            Adultos
+                                        </span>
+                                    </div>
+                                    {/* Cuadro derecho - Niños */}
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-3xl md:text-4xl font-extrabold text-[#ffff] drop-shadow-md">
+                                            {ninos}
+                                        </span>
+                                        <span className="text-xs md:text-sm font-light text-white tracking-widest mt-1">
+                                            {ninos === "1" ? "Niño" : "Niños"}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            /* CASO: solo adultos → imagen con UN cuadro */
+                            <div className="relative inline-block">
+                                <Image
+                                    src={numeroUno}
+                                    alt="Lugares"
+                                    width={200}
+                                    height={120}
+                                    className="w-40 md:w-50 mx-auto"
+                                />
+                                {/* Número + etiqueta encima */}
+                                <div className="absolute inset-0 flex flex-col justify-start items-center pt-11 md:pt-15">
+                                    <span className="text-4xl md:text-5xl font-extrabold text-[#ffff] drop-shadow-md">
+                                        {adultos}
+                                    </span>
+                                    <span className="text-xs md:text-sm font-light text-white tracking-widest mt-1">
+                                        {adultos === "1" ? "Adulto" : "Adultos"}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
+                    </div>
+
+                    { /**<span className="font-bold">
+                        {ninos
+                            ? `${adultos} ${adultos === "1" ? "Adulto" : "Adultos"} y ${ninos} ${ninos === "1" ? "Niño" : "Niños"}`
+                            : `${adultos} ${adultos === "1" ? "Lugar" : "Lugares"} para ti`
+                        }
+                    </span>**/}
                 </h2>
 
-                <div id="formulario-asistencia" className="w-full py-10 px-4 text-center bg-[#FFFF] text-black">
+                <div id="formulario-asistencia" className={`${bodoni.className} w-full py-10 px-4 text-center bg-transparent text-white`}>
                     <h2 className="text-2xl lg:text-4xl font-semibold mb-6">Confirma tu asistencia</h2>
+
                     {!isFormVisible ? (
                         <Button
-                            onClick={() => setIsFormVisible(true)} // Muestra el formulario
+                            onClick={() => setIsFormVisible(true)}
                             className="mt-4 px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 
-          text-sm sm:text-base md:text-lg lg:text-xl 
-          bg-black text-white rounded-2xl shadow-lg 
-          hover:bg-gray-800 transition duration-300"
+            text-sm sm:text-base md:text-lg lg:text-xl 
+            bg-[#5c6c34] text-white rounded-2xl shadow-lg 
+            hover:bg-[#5c6c34] transition duration-300"
                         >
                             Confirmar asistencia
                         </Button>
                     ) : (
-                        <form onSubmit={handleSubmit(onSubmit)} className="max-w-md mx-auto space-y-6">
-                            <div className="text-left">
-                                <Label htmlFor="nombre">Nombre completo</Label>
-                                <Input id="nombre" type="text" {...register("nombre", { required: "Este campo es obligatorio" })} placeholder="Tu nombre" />
-                                {errors.nombre && <p className="text-red-500 text-sm mt-1">{errors.nombre.message}</p>}
-                            </div>
+                        <div className="max-w-md mx-auto space-y-10">
 
-                            <div className="text-left">
-                                <Label htmlFor="telefono">Teléfono</Label>
-                                <Input id="telefono" type="text" {...register("telefono", { required: "Este campo es obligatorio" })} placeholder="Tu teléfono" />
-                                {errors.telefono && <p className="text-red-500 text-sm mt-1">{errors.telefono.message}</p>}
-                            </div>
+                            {/* Un formulario por cada invitado */}
+                            {Array.from({ length: totalInvitados }).map((_, index) => (
+                                <InvitadoForm
+                                    key={index}
+                                    index={index}
+                                    total={totalInvitados}
+                                    adultos={parseInt(adultos)}
+                                />
+                            ))}
 
-                            <div className="text-left">
-                                <Label htmlFor="confirmacion">Confirmación</Label>
-                                <div className="flex items-center gap-4 mt-2">
-                                    <label className="flex items-center gap-2">
-                                        <input
-                                            type="radio"
-                                            value="Sí asistiré"
-                                            {...register("confirmacion", { required: "Por favor selecciona una opción" })}
-                                            className="form-radio"
-                                        />
-                                        Sí asistiré
-                                    </label>
-                                    <label className="flex items-center gap-2">
-                                        <input
-                                            type="radio"
-                                            value="No podré ir"
-                                            {...register("confirmacion", { required: "Por favor selecciona una opción" })}
-                                            className="form-radio"
-                                        />
-                                        No podré ir
-                                    </label>
-                                </div>
-                                {errors.confirmacion && <p className="text-red-500 text-sm mt-1">{errors.confirmacion.message}</p>}
-                            </div>
-
-                            <Button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="mt-4 px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 
-            text-sm sm:text-base md:text-lg lg:text-xl 
-            bg-black text-white rounded-2xl shadow-lg 
-            hover:bg-gray-800 transition duration-300"
-                            >
-                                {isSubmitting ? "Enviando..." : "Enviar confirmación"}
-                            </Button>
-                        </form>
+                        </div>
                     )}
                 </div>
+
+                <p className="text-1xl lg:text-3xl xl:text-4xl  mb-15 italic ">
+                    Esperamos que puedas acompañarnos <br />
+                    y confirmar tu asistencia antes del 02 de abril
+                </p>
+
+
+
             </div>
-            {/* Sección etinerario 
-            <div className="w-full min-h-[55rem] md:h-[70vh] lg:h-[85rem] flex flex-col items-center justify-center text-center bg-[#4c6454] text-black">
-                <Image src={ubicacion} alt="Logo" width={150} height={60} className="mb-6 w-13 mx-auto" />
-                <h1 className="text-3xl lg:text-4xl xl:text-5xl font-bold mb-15 text-white" >
-                    ETINERARIO
-                </h1>
-                <Image src={etinerario} alt="Logo" width={150} height={60} className="mb-6 mx-auto w-60 sm:w-52 md:w-60 lg:w-90 h-auto" />
 
-            </div>*/}
+            {/* Sección 5 - Participación */}
+            <div
+                className={`${bodoni.className} w-full min-h-[75rem] md:h-[85rem] lg:h-[95rem] flex flex-col items-center justify-center text-center text-black relative overflow-hidden text-black`}
+                style={{
+                    backgroundImage: `url(${fondSeccion4})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                }}
+            >
+                <Image src={iglesia} alt="iglesia" width={30} height={20} className="w-10 mx-auto" />
+                <h2 className="pt-6 text-2xl lg:text-4xl italic xl:text-5xl font-light mb-4 leading-loose">
+                    <span className='font-light'>CEREMONIA</span> <br /> 12:30 hrs.
 
+                </h2>
+                <Image src={copas} alt="etiqueta" width={80} height={80} className="mb-4 w-12 mx-auto" />
+                <h2 className="pt-4 italic text-2xl lg:text-4xl xl:text-5xl font-light mb-1 leading-loose">
+                    RECEPCIÓN <br /><span className='font-light'>13;15 hrs.</span>
 
+                </h2>
+
+                <div className="relative mt-10 w-[80%] max-w-sm ml-auto mr-4 md:mr-10 bg-white/80 backdrop-blur-sm rounded-tl-[3rem] rounded-br-[1rem] rounded-tr-[1rem] rounded-bl-[1rem] shadow-lg p-6 text-left">
+
+                    {/* Nombre del lugar */}
+                    <h3 className="text-lg md:text-xl lg:text-2xl italic tracking-widest text-center text-black mb-1">
+                        LAGUNA BERMEJA
+                    </h3>
+
+                    {/* Dirección */}
+                    <p className="text-xs md:text-sm text-center text-gray-600 italic mb-3 leading-relaxed">
+                        Eventos laguna bermeja, Aldea Laguna Bermeja, <br />
+                        Santa Catarina Pínula, Guatemala.
+                    </p>
+
+                    {/* Ícono Waze clickeable */}
+                    <div className="flex justify-center mb-3">
+                        <a
+                            href="https://waze.com/ul?q=Laguna+Bermeja+Santa+Catarina+Pinula+Guatemala"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:scale-110 transition-transform duration-200"
+                        >
+                            <BrandWaze size={48} className="mx-auto" />
+                        </a>
+                    </div>
+
+                    {/* Foto del lugar */}
+                    <div className="w-full rounded-xl overflow-hidden">
+                        <Image
+                            src={fotoLuguar}
+                            alt="Laguna Bermeja"
+                            width={400}
+                            height={250}
+                            className="w-full h-44 object-cover rounded-xl"
+                        />
+                    </div>
+                </div>
+
+                <p className="text-1xl lg:text-2xl xl:text-3xl font-thin mb-2 italic text-center mt-10">
+                    Gracias por ser parte de este momento tan especial. <br />
+                    Su compañía significa mucho para nosotros. <br />
+                    Con cariño, le pedimos presentar <br />
+                    su invitación al ingresar.
+                </p>
+                <div
+                    className="w-full py-12 flex flex-col items-center justify-center text-center"
+                    style={{
+                        backgroundImage: `url(${fondSeccion4})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                    }}
+                >
+                    <p className={`${bodoni.className} text-sm md:text-base italic text-gray-500 tracking-widest mb-1`}>
+                        Designed by Woowbe
+                    </p>
+                    <p className="text-xs md:text-sm tracking-[0.3em] text-gray-400 uppercase">
+                        www.woowbegt.com
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+
+}
+
+function InvitadoForm({ index, total, adultos }) {
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isSubmitting },
+        reset,
+    } = useForm();
+
+    const [enviado, setEnviado] = useState(false);
+
+    // Determina la etiqueta según si es adulto o niño
+    const esAdulto = index < adultos;
+    const etiqueta = esAdulto ? `Adulto ${index + 1}` : `Niño ${index + 1 - adultos}`;
+
+    const onSubmit = async (data) => {
+        try {
+            const res = await fetch("/api/registrarInvitado/registrar", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...data, tipo: esAdulto ? "adulto" : "nino" }),
+            });
+
+            if (!res.ok) throw new Error("Error al enviar");
+
+            toast.success(`Datos de ${etiqueta} enviados correctamente`);
+            setEnviado(true);
+            reset();
+        } catch (err) {
+            toast.error("Hubo un problema al enviar el formulario");
+            console.error(err);
+        }
+    };
+
+    if (enviado) {
+        return (
+            <div className="max-w-md mx-auto p-6 border border-white/30 rounded-2xl text-center">
+                <p className="text-xl text-white italic">✓ {etiqueta} confirmado</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="border border-white/30 rounded-2xl p-6">
+            <h3 className="text-xl lg:text-2xl font-semibold mb-4 italic">
+                {etiqueta}
+            </h3>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <div className="text-left">
+                    <Label htmlFor={`nombre-${index}`}>Nombre completo</Label>
+                    <Input
+                        id={`nombre-${index}`}
+                        type="text"
+                        {...register("nombre", { required: "Este campo es obligatorio" })}
+                        placeholder="Tu nombre"
+                    />
+                    {errors.nombre && (
+                        <p className="text-red-400 text-sm mt-1">{errors.nombre.message}</p>
+                    )}
+                </div>
+
+                <div className="text-left">
+                    <Label htmlFor={`telefono-${index}`}>Teléfono</Label>
+                    <Input
+                        id={`telefono-${index}`}
+                        type="text"
+                        {...register("telefono", { required: "Este campo es obligatorio" })}
+                        placeholder="Tu teléfono"
+                    />
+                    {errors.telefono && (
+                        <p className="text-red-400 text-sm mt-1">{errors.telefono.message}</p>
+                    )}
+                </div>
+
+                <div className="text-left">
+                    <Label>Confirmación</Label>
+                    <div className="flex items-center gap-4 mt-2">
+                        <label className="flex items-center gap-2">
+                            <input
+                                type="radio"
+                                value="Sí asistiré"
+                                {...register("confirmacion", { required: "Por favor selecciona una opción" })}
+                                className="form-radio"
+                            />
+                            Sí asistiré
+                        </label>
+                        <label className="flex items-center gap-2">
+                            <input
+                                type="radio"
+                                value="No podré ir"
+                                {...register("confirmacion", { required: "Por favor selecciona una opción" })}
+                                className="form-radio"
+                            />
+                            No podré ir
+                        </label>
+                    </div>
+                    {errors.confirmacion && (
+                        <p className="text-red-400 text-sm mt-1">{errors.confirmacion.message}</p>
+                    )}
+                </div>
+
+                <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="mt-4 px-6 py-3 text-base lg:text-xl 
+                    bg-[#5c6c34] text-white rounded-2xl shadow-lg 
+                    hover:bg-[#5c6c34] transition duration-300"
+                >
+                    {isSubmitting ? "Enviando..." : `Confirmar ${etiqueta}`}
+                </Button>
+            </form>
         </div>
     );
 }
