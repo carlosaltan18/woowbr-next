@@ -333,7 +333,7 @@ export function InvitacionBoda() {
                             alt="Logo siman"
                             width={100}
                             height={60}
-                            className="w-15"
+                            className="w-20"
                         />
                     </Link>
                 </div>
@@ -463,7 +463,7 @@ export function InvitacionBoda() {
                 </h2>
                 <Image src={copas} alt="etiqueta" width={80} height={80} className="mb-4 w-12 mx-auto" />
                 <h2 className="pt-4 italic text-2xl lg:text-4xl xl:text-5xl font-light mb-1 leading-loose">
-                    RECEPCIÓN <br /><span className='font-light'>13;15 hrs.</span>
+                    RECEPCIÓN <br /><span className='font-light'>13:15 hrs.</span>
 
                 </h2>
 
