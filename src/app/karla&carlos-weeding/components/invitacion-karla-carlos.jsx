@@ -155,13 +155,13 @@ export function InvitacionBoda() {
                     <h1 className={`${greatVibes.className} text-[#b6bdae] text-5xl md:text-7xl lg:text-8xl  mb-3`}>
                         Karla & Carlos
                     </h1>
-                    <div className="mt-2">
+                    <div className="mt-3">
                         <Image
                             src={logoCA}
                             alt="Logo"
                             width={150}
                             height={150}
-                            className="rounded-full  rotate-90 -translate-x-5"
+                            className="rounded-full  rotate-90 -translate-x-6 translate-y-3"
                         />
                     </div>
                     <h1 className={`${bodoni.className} text-[#b6bdae] text-2xl md:text-3xl lg:text-5xl absolute bottom-8 md:bottom-12`}>
@@ -199,10 +199,10 @@ export function InvitacionBoda() {
                     {/* Mensaje de Privilegio */}
                     <div className={`${bodoni.className} text-xl md:text-3xl lg:text-4xl italic leading-relaxed max-w-[90%] md:max-w-3xl mx-auto mb-12`}>
                         <p>
-                            Dios nos ha concedido el privilegio<br className="hidden md:block" />
-                            de conocernos y amarnos, y hoy<br className="hidden md:block" />
-                            con su bendición<br className="hidden md:block" />
-                            y la de nuestros padres queremos<br className="hidden md:block" />
+                            Dios nos ha concedido el privilegio <br className="hidden md:block" />
+                            de conocernos y amarnos, y hoy <br className="hidden md:block" />
+                            con su bendición <br className="hidden md:block" />
+                            y la de nuestros padres queremos <br className="hidden md:block" />
                             unir nuestras vidas para siempre
                         </p>
                     </div>
