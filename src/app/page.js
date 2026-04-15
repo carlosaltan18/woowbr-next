@@ -108,45 +108,57 @@ export default function Component() {
 
 
 
-  return (
-   <div className="flex flex-col items-center justify-center h-screen bg-black text-white">
-  <motion.div
-    initial={{ opacity: 0, scale: 0.95 }}
-    animate={{ opacity: 1, scale: 1 }}
-    transition={{ duration: 1 }}
-    className="relative w-40 sm:w-72 md:w-96 aspect-square rounded-xl overflow-hidden"
-  >
-    <motion.div
-      animate={{ scale: [0.98, 0.99, 0.98] }}
-      transition={{
-        duration: 1.5,
-        repeat: Infinity,
-        repeatType: "loop",
-        ease: "easeInOut"
-      }}
-      className="relative w-full h-full"
-    >
-      <Image
-        src={imgWoowbeBlack}
-        alt="Productos Woowbe"
-        fill
-        className="object-contain"
-        sizes="(max-width: 640px) 10rem,
-        (max-width: 768px) 15rem,
-        (max-width: 1024px) 15rem,
-        24rem"
-      />
-    </motion.div>
-  </motion.div>
+ return (
+    <div className="flex flex-col items-center justify-center h-screen bg-black text-white relative">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1 }}
+        className="relative w-40 sm:w-72 md:w-96 aspect-square rounded-xl overflow-hidden"
+      >
+        <motion.div
+          animate={{ scale: [0.98, 0.99, 0.98] }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            repeatType: "loop",
+            ease: "easeInOut"
+          }}
+          className="relative w-full h-full"
+        >
+          <Image
+            src={imgWoowbeBlack}
+            alt="Productos Woowbe"
+            fill
+            className="object-contain"
+            sizes="(max-width: 640px) 10rem, (max-width: 768px) 15rem, (max-width: 1024px) 15rem, 24rem"
+          />
+        </motion.div>
+      </motion.div>
 
-  <motion.p
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 1.2, duration: 0.8 }}
-    className="mt-6 text-lg sm:text-3xl font-semibold text-center"
-  >
-    ¡Siempre tan WOOW como tú!
-  </motion.p>
-</div>
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.2, duration: 0.8 }}
+        className="mt-6 text-lg sm:text-3xl font-semibold text-center"
+      >
+        ¡Siempre tan WOOW como tú!
+      </motion.p>
+
+      {/* --- BOTÓN DE REGISTRO AL CENTRO ABAJO --- */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2, duration: 1 }}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 w-full max-w-xs px-4"
+      >
+        <Button 
+          onClick={() => router.push('/formulario')} // Cambia '/registro' por tu ruta real
+          className="w-full bg-white text-[#000000] hover:bg-gray-200 rounded-full py-6 text-xl font-bold transition-all shadow-lg"
+        >
+          Regístrate
+        </Button>
+      </motion.div>
+    </div>
   );
 }
