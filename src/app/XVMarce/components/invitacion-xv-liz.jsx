@@ -31,17 +31,21 @@ const MASS_MAP = 'https://www.google.com/maps/place/Museo+San+Juan+del+Obispo/@1
 const MASS_WAZE = 'https://waze.com/ul/h9fx6x7ymn';
 const RECEPTION_MAP = 'https://www.google.com/maps/place/Hotel+Soleil+La+Antigua/@14.551486,-90.739967,740m/data=!3m2!1e3!4b1!4m9!3m8!1s0x85890e12036b50d5:0x628096f623aa6ba!5m2!4m1!1i2!8m2!3d14.551486!4d-90.739967!16s%2Fg%2F1tf_1djq?entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D';
 const RECEPTION_WAZE = 'https://waze.com/ul/h9fx6z1j1n';
+
 const RSVP_SPREADSHEET_ID = '10RjOcKzxa950Gftr1aO_EW3jUCIQJqWnWhlh_4rlCKA';
-const RSVP_SHEET_RANGE = 'Hoja 1!A:G';
+// Cambiamos el rango hasta la H para incluir la nueva columna de niños
+const RSVP_SHEET_RANGE = 'Hoja 1!A:H'; 
 const RSVP_HEADERS = [
     'Nombre confirmado',
     'Asistencia',
     'Tipo de invitado',
     'Fecha de registro',
     'Invitado principal',
-    'Asignación original', // Cambiado para reflejar adultos y niños
+    'Adultos asignados',
+    'Niños asignados',
     'Ubicación asignada',
 ];
+
 const CALENDAR_EVENT = {
     title: 'XV Años de Marce',
     startUtc: '20261031T213000Z',
@@ -158,7 +162,6 @@ function AttendanceModal({ close, guestName, adultCount, kidsCount, assignedLoca
     const [accepted, setAccepted] = useState(false);
     const [saved, setSaved] = useState(false);
     
-    // Configuración inicial del formulario
     const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm({ 
         defaultValues: { 
             asistencia: 'si', 
@@ -169,7 +172,7 @@ function AttendanceModal({ close, guestName, adultCount, kidsCount, assignedLoca
     
     const attending = watch('asistencia') !== 'no';
     
-    // Texto descriptivo para la cabecera
+    // Este texto solo se usa visualmente para el usuario en la invitación
     const getReservaText = () => {
         let texto = [];
         if (adultCount > 0) texto.push(`${adultCount} ${adultCount === 1 ? 'adulto' : 'adultos'}`);
@@ -182,18 +185,15 @@ function AttendanceModal({ close, guestName, adultCount, kidsCount, assignedLoca
         let recordsToSave = [];
         
         if (willAttend) {
-            // Guardar adultos
             data.adultos.forEach(name => {
                 const trimmedName = name.trim();
                 if (trimmedName) recordsToSave.push({ name: trimmedName, type: 'Adulto' });
             });
-            // Guardar niños
             data.ninos.forEach(name => {
                 const trimmedName = name.trim();
                 if (trimmedName) recordsToSave.push({ name: trimmedName, type: 'Niño' });
             });
         } else {
-            // Si declinan, guardamos un solo registro a nombre del invitado principal
             recordsToSave.push({ name: guestName, type: 'Principal' });
         }
         
@@ -212,8 +212,9 @@ function AttendanceModal({ close, guestName, adultCount, kidsCount, assignedLoca
                             person.type, 
                             new Date().toLocaleString('es-GT', { timeZone: 'America/Guatemala', dateStyle: 'short', timeStyle: 'short' }), 
                             guestName, 
-                            getReservaText(), 
-                            assignedLocation
+                            adultCount, // Columna F: Solo el número de adultos
+                            kidsCount,  // Columna G: Solo el número de niños
+                            assignedLocation // Columna H: Ubicación
                         ] 
                     }) 
                 });
