@@ -39,7 +39,7 @@ const RSVP_HEADERS = [
     'Tipo de invitado',
     'Fecha de registro',
     'Invitado principal',
-    'Adultos asignados',
+    'Asignación original', // Cambiado para reflejar adultos y niños
     'Ubicación asignada',
 ];
 const CALENDAR_EVENT = {
@@ -153,19 +153,70 @@ function SaveTheDate() {
     return <div className="relative mx-auto mt-7 w-fit"><button type="button" onClick={() => setShowOptions((current) => !current)} aria-expanded={showOptions} aria-controls="save-the-date-options" className="inline-flex items-center gap-2 rounded-full border border-[#a88705]/60 bg-[#fff7c4]/80 px-5 py-3 text-[.64rem] font-semibold uppercase tracking-[.18em] text-[#8d7500] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#fff1a3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8d7500]"><CalendarPlus size={16} />Save the date<ChevronDown size={15} className={`transition ${showOptions ? 'rotate-180' : ''}`} /></button>{showOptions && <div id="save-the-date-options" className="absolute left-1/2 z-30 mt-2 w-56 -translate-x-1/2 overflow-hidden rounded-xl border border-[#b3951a]/35 bg-[#fffbea] p-1.5 text-left shadow-xl"><a href={GOOGLE_CALENDAR_URL} target="_blank" rel="noreferrer" onClick={() => setShowOptions(false)} className="block rounded-lg px-4 py-3 text-[.66rem] font-semibold uppercase tracking-[.12em] text-[#806b00] transition hover:bg-[#fff0a5]">Google Calendar</a><button type="button" onClick={downloadIcs} className="block w-full rounded-lg px-4 py-3 text-left text-[.66rem] font-semibold uppercase tracking-[.12em] text-[#806b00] transition hover:bg-[#fff0a5]">Calendario de iPhone</button></div>}</div>;
 }
 
-function AttendanceModal({ close, guestName, adultCount, assignedLocation }) {
+function AttendanceModal({ close, guestName, adultCount, kidsCount, assignedLocation }) {
     const [submitted, setSubmitted] = useState(false);
     const [accepted, setAccepted] = useState(false);
     const [saved, setSaved] = useState(false);
-    const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm({ defaultValues: { asistencia: 'si', asistentes: Array.from({ length: adultCount }, (_, index) => (index === 0 ? guestName : '')) } });
+    
+    // Configuración inicial del formulario
+    const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm({ 
+        defaultValues: { 
+            asistencia: 'si', 
+            adultos: Array.from({ length: adultCount }, (_, index) => (index === 0 ? guestName : '')),
+            ninos: Array.from({ length: kidsCount }, () => '')
+        } 
+    });
+    
     const attending = watch('asistencia') !== 'no';
+    
+    // Texto descriptivo para la cabecera
+    const getReservaText = () => {
+        let texto = [];
+        if (adultCount > 0) texto.push(`${adultCount} ${adultCount === 1 ? 'adulto' : 'adultos'}`);
+        if (kidsCount > 0) texto.push(`${kidsCount} ${kidsCount === 1 ? 'niño' : 'niños'}`);
+        return texto.join(' y ');
+    };
 
     const onSubmit = async (data) => {
         const willAttend = data.asistencia === 'si';
-        const people = willAttend ? data.asistentes.map((name) => name.trim()).filter(Boolean) : [guestName];
+        let recordsToSave = [];
+        
+        if (willAttend) {
+            // Guardar adultos
+            data.adultos.forEach(name => {
+                const trimmedName = name.trim();
+                if (trimmedName) recordsToSave.push({ name: trimmedName, type: 'Adulto' });
+            });
+            // Guardar niños
+            data.ninos.forEach(name => {
+                const trimmedName = name.trim();
+                if (trimmedName) recordsToSave.push({ name: trimmedName, type: 'Niño' });
+            });
+        } else {
+            // Si declinan, guardamos un solo registro a nombre del invitado principal
+            recordsToSave.push({ name: guestName, type: 'Principal' });
+        }
+        
         try {
-            for (const name of people) {
-                const response = await fetch('/api/registrarInvitado/registrar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ spreadsheetId: RSVP_SPREADSHEET_ID, range: RSVP_SHEET_RANGE, headers: RSVP_HEADERS, values: [name, willAttend ? 'Asistiré a ceremonia y recepción' : 'No podré asistir', 'Adulto', new Date().toLocaleString('es-GT', { timeZone: 'America/Guatemala', dateStyle: 'short', timeStyle: 'short' }), guestName, adultCount, assignedLocation] }) });
+            for (const person of recordsToSave) {
+                const response = await fetch('/api/registrarInvitado/registrar', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ 
+                        spreadsheetId: RSVP_SPREADSHEET_ID, 
+                        range: RSVP_SHEET_RANGE, 
+                        headers: RSVP_HEADERS, 
+                        values: [
+                            person.name, 
+                            willAttend ? 'Asistiré a ceremonia y recepción' : 'No podré asistir', 
+                            person.type, 
+                            new Date().toLocaleString('es-GT', { timeZone: 'America/Guatemala', dateStyle: 'short', timeStyle: 'short' }), 
+                            guestName, 
+                            getReservaText(), 
+                            assignedLocation
+                        ] 
+                    }) 
+                });
                 if (!response.ok) throw new Error('No se pudo guardar la confirmación');
             }
             setSaved(true);
@@ -179,7 +230,25 @@ function AttendanceModal({ close, guestName, adultCount, assignedLocation }) {
         }
     };
 
-    return <div className="fixed inset-0 z-[70] flex items-end justify-center bg-[#262313]/55 p-3 backdrop-blur-[2px] sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="attendance-title"><div className="relative max-h-[92svh] w-full max-w-[430px] overflow-y-auto rounded-[2rem] border border-[#b29420]/30 bg-[#fffbea] px-5 pb-7 pt-10 text-[#796600] shadow-2xl sm:px-7"><button type="button" onClick={close} aria-label="Cerrar formulario" className="absolute right-4 top-4 rounded-full p-2 text-[#796600] transition hover:bg-[#f7e8a4]"><X size={20} /></button>{submitted ? <div className="py-5 text-center"><Check className="mx-auto mb-4 h-11 w-11 rounded-full bg-[#9b8500] p-2 text-white" />{accepted ? <><p className="text-[.66rem] font-semibold uppercase tracking-[.28em]">Tu ubicación asignada</p><p className="mt-4 text-2xl font-semibold leading-snug text-[#66590a]">{assignedLocation}</p><p className="mx-auto mt-5 max-w-[270px] text-sm leading-relaxed text-[#736423]">Te esperamos para celebrar juntos este día tan especial.</p></> : <><p className="text-xl font-semibold text-[#66590a]">Gracias por avisarnos.</p><p className="mx-auto mt-4 max-w-[270px] text-sm leading-relaxed text-[#736423]">Guardamos tu respuesta. Te extrañaremos en esta celebración.</p></>}{!saved && <p className="mx-auto mt-5 max-w-[290px] text-xs leading-relaxed text-[#736423]">Tu ubicación permanece visible aunque no haya sido posible enviar el registro.</p>}<button type="button" onClick={close} className="mt-7 rounded-xl bg-[#9b8500] px-6 py-3 text-[.68rem] font-semibold uppercase tracking-[.15em] text-white">Cerrar</button></div> : <form onSubmit={handleSubmit(onSubmit)}><p className="text-center text-[.66rem] font-semibold uppercase tracking-[.3em]">RSVP</p><h2 id="attendance-title" className="mt-3 text-center text-2xl font-semibold text-[#66590a]">Confirma tu asistencia</h2><p className="mx-auto mt-3 max-w-[290px] text-center text-sm leading-relaxed text-[#736423]">Esta invitación está reservada para <strong>{adultCount} {adultCount === 1 ? 'adulto' : 'adultos'}</strong>.</p><fieldset className="mt-6"><legend className="text-sm font-semibold text-[#66590a]">¿Podrán acompañarnos?</legend><div className="mt-3 grid grid-cols-2 gap-2"><label className="cursor-pointer rounded-xl border border-[#9b8500]/35 bg-white px-3 py-3 text-center text-sm has-[:checked]:border-[#9b8500] has-[:checked]:bg-[#fff0a9]"><input type="radio" value="si" className="sr-only" {...register('asistencia', { required: true })} />Sí, asistiré</label><label className="cursor-pointer rounded-xl border border-[#9b8500]/35 bg-white px-3 py-3 text-center text-sm has-[:checked]:border-[#9b8500] has-[:checked]:bg-[#fff0a9]"><input type="radio" value="no" className="sr-only" {...register('asistencia', { required: true })} />No podré asistir</label></div></fieldset>{attending && <div className="mt-6 space-y-3"><p className="text-sm font-semibold text-[#66590a]">Nombres de quienes asistirán</p>{Array.from({ length: adultCount }, (_, index) => <div key={index}><label htmlFor={`attendee-${index}`} className="sr-only">{`Nombre del adulto ${index + 1}`}</label><input id={`attendee-${index}`} type="text" autoComplete="name" placeholder={`Nombre del adulto ${index + 1}`} className="w-full rounded-xl border border-[#9b8500]/30 bg-white px-4 py-3 text-sm text-[#51470a] outline-none placeholder:text-[#a79959] focus:border-[#9b8500] focus:ring-2 focus:ring-[#e8ce69]" {...register(`asistentes.${index}`, { required: 'Escribe el nombre de cada adulto que asistirá.' })} />{errors.asistentes?.[index] && <p className="mt-1 text-xs text-red-700">{errors.asistentes[index].message}</p>}</div>)}</div>}<button type="submit" disabled={isSubmitting} className="mt-7 w-full rounded-xl bg-gradient-to-r from-[#aa7800] via-[#d8a714] to-[#aa7800] px-5 py-4 text-[.68rem] font-semibold uppercase tracking-[.16em] text-[#fff9d0] shadow-[0_8px_18px_rgba(127,86,0,.22)] disabled:cursor-wait disabled:opacity-70">{isSubmitting ? 'Guardando...' : 'Enviar confirmación'}</button></form>}</div></div>;
+    return <div className="fixed inset-0 z-[70] flex items-end justify-center bg-[#262313]/55 p-3 backdrop-blur-[2px] sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="attendance-title"><div className="relative max-h-[92svh] w-full max-w-[430px] overflow-y-auto rounded-[2rem] border border-[#b29420]/30 bg-[#fffbea] px-5 pb-7 pt-10 text-[#796600] shadow-2xl sm:px-7"><button type="button" onClick={close} aria-label="Cerrar formulario" className="absolute right-4 top-4 rounded-full p-2 text-[#796600] transition hover:bg-[#f7e8a4]"><X size={20} /></button>{submitted ? <div className="py-5 text-center"><Check className="mx-auto mb-4 h-11 w-11 rounded-full bg-[#9b8500] p-2 text-white" />{accepted ? <><p className="text-[.66rem] font-semibold uppercase tracking-[.28em]">Tu ubicación asignada</p><p className="mt-4 text-2xl font-semibold leading-snug text-[#66590a]">{assignedLocation}</p><p className="mx-auto mt-5 max-w-[270px] text-sm leading-relaxed text-[#736423]">Te esperamos para celebrar juntos este día tan especial.</p></> : <><p className="text-xl font-semibold text-[#66590a]">Gracias por avisarnos.</p><p className="mx-auto mt-4 max-w-[270px] text-sm leading-relaxed text-[#736423]">Guardamos tu respuesta. Te extrañaremos en esta celebración.</p></>}{!saved && <p className="mx-auto mt-5 max-w-[290px] text-xs leading-relaxed text-[#736423]">Tu ubicación permanece visible aunque no haya sido posible enviar el registro.</p>}<button type="button" onClick={close} className="mt-7 rounded-xl bg-[#9b8500] px-6 py-3 text-[.68rem] font-semibold uppercase tracking-[.15em] text-white">Cerrar</button></div> : <form onSubmit={handleSubmit(onSubmit)}><p className="text-center text-[.66rem] font-semibold uppercase tracking-[.3em]">RSVP</p><h2 id="attendance-title" className="mt-3 text-center text-2xl font-semibold text-[#66590a]">Confirma tu asistencia</h2><p className="mx-auto mt-3 max-w-[290px] text-center text-sm leading-relaxed text-[#736423]">Esta invitación está reservada para <strong>{getReservaText()}</strong>.</p><fieldset className="mt-6"><legend className="text-sm font-semibold text-[#66590a]">¿Podrán acompañarnos?</legend><div className="mt-3 grid grid-cols-2 gap-2"><label className="cursor-pointer rounded-xl border border-[#9b8500]/35 bg-white px-3 py-3 text-center text-sm has-[:checked]:border-[#9b8500] has-[:checked]:bg-[#fff0a9]"><input type="radio" value="si" className="sr-only" {...register('asistencia', { required: true })} />Sí, asistiré</label><label className="cursor-pointer rounded-xl border border-[#9b8500]/35 bg-white px-3 py-3 text-center text-sm has-[:checked]:border-[#9b8500] has-[:checked]:bg-[#fff0a9]"><input type="radio" value="no" className="sr-only" {...register('asistencia', { required: true })} />No podré asistir</label></div></fieldset>
+    
+    {attending && <div className="mt-6 space-y-5">
+        {adultCount > 0 && (
+            <div className="space-y-3">
+                <p className="text-sm font-semibold text-[#66590a]">Nombres de los adultos</p>
+                {Array.from({ length: adultCount }, (_, index) => <div key={`adult-${index}`}><label htmlFor={`adult-${index}`} className="sr-only">{`Nombre del adulto ${index + 1}`}</label><input id={`adult-${index}`} type="text" autoComplete="name" placeholder={`Nombre del adulto ${index + 1}`} className="w-full rounded-xl border border-[#9b8500]/30 bg-white px-4 py-3 text-sm text-[#51470a] outline-none placeholder:text-[#a79959] focus:border-[#9b8500] focus:ring-2 focus:ring-[#e8ce69]" {...register(`adultos.${index}`, { required: 'Escribe el nombre de cada adulto.' })} />{errors.adultos?.[index] && <p className="mt-1 text-xs text-red-700">{errors.adultos[index].message}</p>}</div>)}
+            </div>
+        )}
+        
+        {kidsCount > 0 && (
+            <div className="space-y-3">
+                <p className="text-sm font-semibold text-[#66590a]">Nombres de los niños</p>
+                {Array.from({ length: kidsCount }, (_, index) => <div key={`kid-${index}`}><label htmlFor={`kid-${index}`} className="sr-only">{`Nombre del niño ${index + 1}`}</label><input id={`kid-${index}`} type="text" autoComplete="name" placeholder={`Nombre del niño ${index + 1}`} className="w-full rounded-xl border border-[#9b8500]/30 bg-white px-4 py-3 text-sm text-[#51470a] outline-none placeholder:text-[#a79959] focus:border-[#9b8500] focus:ring-2 focus:ring-[#e8ce69]" {...register(`ninos.${index}`, { required: 'Escribe el nombre de cada niño.' })} />{errors.ninos?.[index] && <p className="mt-1 text-xs text-red-700">{errors.ninos[index].message}</p>}</div>)}
+            </div>
+        )}
+    </div>}
+    
+    <button type="submit" disabled={isSubmitting} className="mt-7 w-full rounded-xl bg-gradient-to-r from-[#aa7800] via-[#d8a714] to-[#aa7800] px-5 py-4 text-[.68rem] font-semibold uppercase tracking-[.16em] text-[#fff9d0] shadow-[0_8px_18px_rgba(127,86,0,.22)] disabled:cursor-wait disabled:opacity-70">{isSubmitting ? 'Guardando...' : 'Enviar confirmación'}</button></form>}</div></div>;
 }
 
 export function InvitacionXVLiz() {
@@ -193,10 +262,13 @@ export function InvitacionXVLiz() {
 
     const invitation = useMemo(() => {
         const rawAdults = getFirstParam(searchParams, ['adultos', 'cantidadAdultos', 'cantidad-adultos', 'cantidad_de_adultos'], '1');
+        const rawKids = getFirstParam(searchParams, ['ninos', 'niños', 'cantidadNinos'], '0');
         const parsedAdults = Number.parseInt(rawAdults, 10);
+        const parsedKids = Number.parseInt(rawKids, 10);
         return {
             guestName: getFirstParam(searchParams, ['invitado', 'nombre', 'para', 'familia'], 'Familia invitada'),
-            adultCount: Number.isFinite(parsedAdults) ? Math.min(Math.max(parsedAdults, 1), 20) : 1,
+            adultCount: Number.isFinite(parsedAdults) ? Math.min(Math.max(parsedAdults, 0), 20) : 1,
+            kidsCount: Number.isFinite(parsedKids) ? Math.min(Math.max(parsedKids, 0), 20) : 0,
             assignedLocation: getFirstParam(searchParams, ['ubicacion', 'ubicación', 'locacion', 'locación', 'lugar'], 'Área Lounge')
         };
     }, [searchParams]);
@@ -217,7 +289,6 @@ export function InvitacionXVLiz() {
     const open = () => {
         setOpened(true);
         if (!musicMuted) musicRef.current?.play().catch(() => { });
-        // Como la portada desaparece, aseguramos que la vista inicie desde arriba sin salto brusco
         window.scrollTo({ top: 0, behavior: 'instant' });
     };
 
@@ -253,7 +324,6 @@ export function InvitacionXVLiz() {
             )}
 
             <div className="xv-paper mx-auto max-w-[480px] overflow-hidden shadow-[0_0_0_10px_#1d1d1d,0_0_40px_rgba(0,0,0,.55)]">
-                {/* CONDICIONAL: Si no está abierto, muestra la portada */}
                 {!opened && (
                     <button type="button" onClick={open} aria-label="Abrir invitación de los quince años de Marce" className="relative block min-h-svh w-full overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-[-4px] focus-visible:outline-[#9b8500]" style={{ backgroundColor: '#f8efa6', backgroundImage: `linear-gradient(rgba(255, 246, 165, .22), rgba(255, 246, 165, .22)), url('${PAPER}')`, backgroundPosition: 'center top', backgroundSize: '100% auto', backgroundRepeat: 'no-repeat' }}>
                         <FloatingAsset src={ASSETS.daisy} className="-left-2 top-12 h-32 w-32" movement="xv-sway" imageClassName="-rotate-[12deg]" />
@@ -273,7 +343,6 @@ export function InvitacionXVLiz() {
                     </button>
                 )}
 
-                {/* CONDICIONAL: Si está abierto, reemplaza la portada por el contenido */}
                 {opened && (
                     <div ref={contentRef} className="xv-content-paper">
                         <PaperSection className="min-h-[860px] pt-20">
@@ -426,7 +495,8 @@ export function InvitacionXVLiz() {
                                     <BrandInstagram size={20} strokeWidth={1.5} />
                                 </a>
                             </div>
-                        </footer>                    </div>
+                        </footer>
+                    </div>
                 )}
             </div>
 
