@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Check, ChevronDown, Church, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
+import { CalendarPlus, Check, ChevronDown, Church, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { BrandWaze } from 'tabler-icons-react';
 import { Toaster, toast } from 'react-hot-toast';
 import { useSearchParams } from 'next/navigation';
@@ -42,6 +42,16 @@ const RSVP_HEADERS = [
     'Adultos asignados',
     'Ubicación asignada',
 ];
+const CALENDAR_EVENT = {
+    title: 'XV Años de Marce',
+    startUtc: '20261031T213000Z',
+    endUtc: '20261101T023000Z',
+    startLocal: '20261031T153000',
+    endLocal: '20261031T203000',
+    location: 'Capilla del Museo San Juan del Obispo, Antigua Guatemala',
+    description: 'Ceremonia: 3:30 p. m.\nRecepción: Hotel Soleil, Salón Los Volcanes, Antigua Guatemala.',
+};
+const GOOGLE_CALENDAR_URL = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(CALENDAR_EVENT.title)}&dates=${CALENDAR_EVENT.startUtc}/${CALENDAR_EVENT.endUtc}&details=${encodeURIComponent(CALENDAR_EVENT.description)}&location=${encodeURIComponent(CALENDAR_EVENT.location)}`;
 
 function getFirstParam(params, keys, fallback) {
     for (const key of keys) {
@@ -95,7 +105,52 @@ function Countdown() {
         const interval = window.setInterval(() => setTime(remainingTime()), 1000);
         return () => window.clearInterval(interval);
     }, []);
-    return <p className="text-[clamp(2rem,9vw,3.1rem)] font-medium tracking-[.13em] text-[#9b8500]" aria-label="Cuenta regresiva">{twoDigits(time.days)}:{twoDigits(time.hours)}:{twoDigits(time.minutes)}:{twoDigits(time.seconds)}</p>;
+    const segments = [
+        { value: time.days, label: 'Días' },
+        { value: time.hours, label: 'H' },
+        { value: time.minutes, label: 'M' },
+        { value: time.seconds, label: 'S' },
+    ];
+
+    return <div className="mx-auto flex max-w-[350px] items-start justify-center gap-1 text-[#9b8500]" aria-label={`Cuenta regresiva: ${time.days} días, ${time.hours} horas, ${time.minutes} minutos y ${time.seconds} segundos`}>{segments.map((segment, index) => <React.Fragment key={segment.label}><div className="flex min-w-[3.5rem] flex-col items-center"><span className="text-[clamp(2rem,9vw,3.1rem)] font-medium leading-none tracking-[.08em]">{twoDigits(segment.value)}</span><span className="mt-2 text-[.52rem] font-semibold uppercase tracking-[.15em]">{segment.label}</span></div>{index < segments.length - 1 && <span className="mt-0.5 text-[clamp(1.5rem,7vw,2.4rem)] font-medium leading-none">:</span>}</React.Fragment>)}</div>;
+}
+
+function escapeIcsValue(value) {
+    return value.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+}
+
+function SaveTheDate() {
+    const [showOptions, setShowOptions] = useState(false);
+
+    const downloadIcs = () => {
+        const ics = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//Woowbe//XV Marce//ES',
+            'CALSCALE:GREGORIAN',
+            'BEGIN:VEVENT',
+            'UID:xv-marce-20261031@woowbegt.com',
+            'DTSTAMP:20260913T000000Z',
+            `DTSTART;TZID=America/Guatemala:${CALENDAR_EVENT.startLocal}`,
+            `DTEND;TZID=America/Guatemala:${CALENDAR_EVENT.endLocal}`,
+            `SUMMARY:${escapeIcsValue(CALENDAR_EVENT.title)}`,
+            `LOCATION:${escapeIcsValue(CALENDAR_EVENT.location)}`,
+            `DESCRIPTION:${escapeIcsValue(CALENDAR_EVENT.description)}`,
+            'END:VEVENT',
+            'END:VCALENDAR',
+        ].join('\r\n');
+        const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'xv-anos-marce.ics';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 0);
+        setShowOptions(false);
+    };
+
+    return <div className="relative mx-auto mt-7 w-fit"><button type="button" onClick={() => setShowOptions((current) => !current)} aria-expanded={showOptions} aria-controls="save-the-date-options" className="inline-flex items-center gap-2 rounded-full border border-[#a88705]/60 bg-[#fff7c4]/80 px-5 py-3 text-[.64rem] font-semibold uppercase tracking-[.18em] text-[#8d7500] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#fff1a3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8d7500]"><CalendarPlus size={16} />Save the date<ChevronDown size={15} className={`transition ${showOptions ? 'rotate-180' : ''}`} /></button>{showOptions && <div id="save-the-date-options" className="absolute left-1/2 z-30 mt-2 w-56 -translate-x-1/2 overflow-hidden rounded-xl border border-[#b3951a]/35 bg-[#fffbea] p-1.5 text-left shadow-xl"><a href={GOOGLE_CALENDAR_URL} target="_blank" rel="noreferrer" onClick={() => setShowOptions(false)} className="block rounded-lg px-4 py-3 text-[.66rem] font-semibold uppercase tracking-[.12em] text-[#806b00] transition hover:bg-[#fff0a5]">Google Calendar</a><button type="button" onClick={downloadIcs} className="block w-full rounded-lg px-4 py-3 text-left text-[.66rem] font-semibold uppercase tracking-[.12em] text-[#806b00] transition hover:bg-[#fff0a5]">Calendario de iPhone</button></div>}</div>;
 }
 
 function AttendanceModal({ close, guestName, adultCount, assignedLocation }) {
@@ -249,6 +304,7 @@ export function InvitacionXVLiz() {
                                 <Countdown />
                                 <Asset src={ASSETS.calendar} alt="Agenda en tu calendario" className="mx-auto mt-24 w-40" />
                                 <p className="mt-12 text-[.72rem] font-semibold uppercase tracking-[.38em]">31 de octubre de 2026</p>
+                                <SaveTheDate />
                             </div>
                             
                             <div className="relative z-10 mt-48 min-h-[620px]">
