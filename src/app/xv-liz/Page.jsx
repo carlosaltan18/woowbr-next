@@ -1,11 +1,10 @@
-import React from 'react'
-import { InvitacionXVLiz } from './components/invitacion-xv-liz'
-import { Suspense } from "react";
+import { Suspense } from 'react';
+import { InvitacionXVLiz } from './components/invitacion-xv-liz';
 
 export default function Page() {
   return (
-     <Suspense>
+    <Suspense>
       <InvitacionXVLiz />
     </Suspense>
-  )
+  );
 }
