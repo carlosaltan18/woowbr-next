@@ -393,7 +393,7 @@ export function InvitacionXVLiz() {
                             <Sparkles className="pointer-events-none absolute right-8 bottom-[27%] h-9 w-9 text-white" fill="white" strokeWidth={0} />
                             <div className="relative z-10 mx-auto max-w-[300px]">
                                 <Asset src={ASSETS.gift} alt="Regalo" className="mx-auto w-14" />
-                                <p className="mt-8 text-[.65rem] font-semibold uppercase leading-[1.55] tracking-[.31em]">El mejor regalo<br />es compartir<br />este momento contigo.<br />Si deseas<br />bendecirme contaré<br />con mucha alegría<br />y sobres el día del evento.</p>
+                                <p className="mt-8 text-[.65rem] font-semibold uppercase leading-[1.55] tracking-[.31em]">El mejor regalo<br />es compartir<br />este momento contigo.<br />Si deseas<br />bendecirme contaré<br />con una cajita<br />y sobres el día del evento.</p>
                                 <div className="xv-bob mx-auto mt-20 h-24 w-24">
                                     <Asset src={ASSETS.discoBall} alt="Esfera disco" className="xv-straight-ball h-full w-full object-contain" />
                                 </div>
