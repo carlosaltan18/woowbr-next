@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { CalendarPlus, Check, ChevronDown, Church, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
+import { CalendarPlus, Check, ChevronDown, ChevronUp, Church, MapPin, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import { useSearchParams } from 'next/navigation';
 import { BrandWaze, BrandTiktok, BrandInstagram } from 'tabler-icons-react';
@@ -63,6 +63,45 @@ function getFirstParam(params, keys, fallback) {
         if (value) return value;
     }
     return fallback;
+}
+
+function getSeatAssignments(params, adultCount, kidsCount, defaultLocation) {
+    const customValues = [
+        ...params.getAll('asignacion'),
+        ...params.getAll('asignaciones').flatMap((value) => value.split(';')),
+    ];
+    let remainingAdults = adultCount;
+    let remainingKids = kidsCount;
+    const assignments = [];
+
+    customValues.forEach((value) => {
+        const [rawType, rawCount, ...rawLocation] = value.split('|').map((part) => part.trim());
+        const type = rawType?.toLocaleLowerCase('es') ?? '';
+        const category = type.includes('niñ') || type.includes('nin') ? 'kids' : 'adults';
+        const requestedCount = Number.parseInt(rawCount, 10);
+        const available = category === 'kids' ? remainingKids : remainingAdults;
+        const count = Math.min(Number.isFinite(requestedCount) ? requestedCount : 0, available);
+        const location = rawLocation.join('|').trim();
+
+        if (!count || !location) return;
+        assignments.push({ category, count, location });
+        if (category === 'kids') remainingKids -= count;
+        else remainingAdults -= count;
+    });
+
+    const kidsLocation = getFirstParam(params, ['ubicacionNinos', 'ubicacionNiños', 'ubicacion_ninos', 'ubicacion_niños'], defaultLocation);
+    if (remainingAdults > 0) assignments.push({ category: 'adults', count: remainingAdults, location: defaultLocation });
+    if (remainingKids > 0) assignments.push({ category: 'kids', count: remainingKids, location: kidsLocation });
+    return assignments;
+}
+
+function assignmentLabel({ category, count }) {
+    const person = category === 'kids' ? 'niño' : 'adulto';
+    return `${count} ${count === 1 ? person : `${person}s`}`;
+}
+
+function SeatAssignments({ assignments }) {
+    return <ul className="mt-4 space-y-2 text-left">{assignments.map((assignment, index) => <li key={`${assignment.category}-${assignment.location}-${index}`} className="flex items-center gap-3 rounded-xl border border-[#a98a09]/20 bg-white/75 px-3 py-2.5"><MapPin size={16} className="shrink-0 text-[#a48700]" /><span className="min-w-0 flex-1 text-sm font-semibold text-[#625409]">{assignmentLabel(assignment)}</span><span className="max-w-[48%] text-right text-sm leading-snug text-[#796600]">{assignment.location}</span></li>)}</ul>;
 }
 
 function remainingTime() {
@@ -157,7 +196,7 @@ function SaveTheDate() {
     return <div className="relative mx-auto mt-7 w-fit"><button type="button" onClick={() => setShowOptions((current) => !current)} aria-expanded={showOptions} aria-controls="save-the-date-options" className="inline-flex items-center gap-2 rounded-full border border-[#a88705]/60 bg-[#fff7c4]/80 px-5 py-3 text-[.64rem] font-semibold uppercase tracking-[.18em] text-[#8d7500] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#fff1a3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8d7500]"><CalendarPlus size={16} />Save the date<ChevronDown size={15} className={`transition ${showOptions ? 'rotate-180' : ''}`} /></button>{showOptions && <div id="save-the-date-options" className="absolute left-1/2 z-30 mt-2 w-56 -translate-x-1/2 overflow-hidden rounded-xl border border-[#b3951a]/35 bg-[#fffbea] p-1.5 text-left shadow-xl"><a href={GOOGLE_CALENDAR_URL} target="_blank" rel="noreferrer" onClick={() => setShowOptions(false)} className="block rounded-lg px-4 py-3 text-[.66rem] font-semibold uppercase tracking-[.12em] text-[#806b00] transition hover:bg-[#fff0a5]">Google Calendar</a><button type="button" onClick={downloadIcs} className="block w-full rounded-lg px-4 py-3 text-left text-[.66rem] font-semibold uppercase tracking-[.12em] text-[#806b00] transition hover:bg-[#fff0a5]">Calendario de iPhone</button></div>}</div>;
 }
 
-function AttendanceModal({ close, guestName, adultCount, kidsCount, assignedLocation }) {
+function LegacyAttendanceModal({ close, guestName, adultCount, kidsCount, assignedLocation }) {
     const [submitted, setSubmitted] = useState(false);
     const [accepted, setAccepted] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -252,10 +291,88 @@ function AttendanceModal({ close, guestName, adultCount, kidsCount, assignedLoca
     <button type="submit" disabled={isSubmitting} className="mt-7 w-full rounded-xl bg-gradient-to-r from-[#aa7800] via-[#d8a714] to-[#aa7800] px-5 py-4 text-[.68rem] font-semibold uppercase tracking-[.16em] text-[#fff9d0] shadow-[0_8px_18px_rgba(127,86,0,.22)] disabled:cursor-wait disabled:opacity-70">{isSubmitting ? 'Guardando...' : 'Enviar confirmación'}</button></form>}</div></div>;
 }
 
+function AttendeeNameFields({ category, assignments, register, errors }) {
+    const fieldName = category === 'kids' ? 'ninos' : 'adultos';
+    const personLabel = category === 'kids' ? 'niño' : 'adulto';
+    let startIndex = 0;
+
+    return <div className="space-y-5">{assignments.filter((assignment) => assignment.category === category).map((assignment, groupIndex) => {
+        const groupStart = startIndex;
+        startIndex += assignment.count;
+        return <section key={`${category}-${assignment.location}-${groupIndex}`} className="rounded-xl border border-[#a98a09]/20 bg-white/55 p-3"><div className="flex items-start justify-between gap-3"><p className="text-sm font-semibold text-[#66590a]">{assignmentLabel(assignment)}</p><p className="max-w-[52%] text-right text-xs leading-snug text-[#806b00]">{assignment.location}</p></div><div className="mt-3 space-y-2.5">{Array.from({ length: assignment.count }, (_, index) => {
+            const fieldIndex = groupStart + index;
+            return <div key={fieldIndex}><label htmlFor={`${fieldName}-${fieldIndex}`} className="sr-only">{`Nombre del ${personLabel} ${fieldIndex + 1}`}</label><input id={`${fieldName}-${fieldIndex}`} type="text" autoComplete="name" placeholder={`Nombre del ${personLabel} ${fieldIndex + 1}`} className="w-full rounded-xl border border-[#9b8500]/30 bg-white px-4 py-3 text-sm text-[#51470a] outline-none placeholder:text-[#a79959] focus:border-[#9b8500] focus:ring-2 focus:ring-[#e8ce69]" {...register(`${fieldName}.${fieldIndex}`, { required: `Escribe el nombre de cada ${personLabel}.` })} />{errors[fieldName]?.[fieldIndex] && <p className="mt-1 text-xs text-red-700">{errors[fieldName][fieldIndex].message}</p>}</div>;
+        })}</div></section>;
+    })}</div>;
+}
+
+function AttendanceModal({ close, guestName, adultCount, kidsCount, assignedLocation, seatAssignments }) {
+    const [submitted, setSubmitted] = useState(false);
+    const [accepted, setAccepted] = useState(false);
+    const [saved, setSaved] = useState(false);
+    const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm({
+        defaultValues: {
+            asistencia: 'si',
+            adultos: Array.from({ length: adultCount }, (_, index) => (index === 0 ? guestName : '')),
+            ninos: Array.from({ length: kidsCount }, () => ''),
+        },
+    });
+    const attending = watch('asistencia') !== 'no';
+    const reservationText = [
+        adultCount > 0 && `${adultCount} ${adultCount === 1 ? 'adulto' : 'adultos'}`,
+        kidsCount > 0 && `${kidsCount} ${kidsCount === 1 ? 'niño' : 'niños'}`,
+    ].filter(Boolean).join(' y ');
+
+    const locationFor = (category, index) => {
+        let completed = 0;
+        for (const assignment of seatAssignments) {
+            if (assignment.category !== category) continue;
+            if (index < completed + assignment.count) return assignment.location;
+            completed += assignment.count;
+        }
+        return assignedLocation;
+    };
+
+    const onSubmit = async (data) => {
+        const willAttend = data.asistencia === 'si';
+        const recordsToSave = willAttend ? [
+            ...data.adultos.map((name, index) => ({ name: name.trim(), type: 'Adulto', location: locationFor('adults', index) })),
+            ...data.ninos.map((name, index) => ({ name: name.trim(), type: 'Niño', location: locationFor('kids', index) })),
+        ].filter((person) => person.name) : [{ name: guestName, type: 'Principal', location: seatAssignments.map((assignment) => assignment.location).join(' · ') || assignedLocation }];
+
+        try {
+            for (const person of recordsToSave) {
+                const response = await fetch('/api/registrarInvitado/registrar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        spreadsheetId: RSVP_SPREADSHEET_ID,
+                        range: RSVP_SHEET_RANGE,
+                        headers: RSVP_HEADERS,
+                        values: [person.name, willAttend ? 'Asistiré a ceremonia y recepción' : 'No podré asistir', person.type, new Date().toLocaleString('es-GT', { timeZone: 'America/Guatemala', dateStyle: 'short', timeStyle: 'short' }), guestName, adultCount, kidsCount, person.location],
+                    }),
+                });
+                if (!response.ok) throw new Error('No se pudo guardar la confirmación');
+            }
+            setSaved(true);
+            toast.success('Tu respuesta fue registrada. ¡Gracias!');
+        } catch (error) {
+            console.error(error);
+            toast.error('No pudimos guardar tu respuesta en este momento.');
+        } finally {
+            setAccepted(willAttend);
+            setSubmitted(true);
+        }
+    };
+
+    return <div className="fixed inset-0 z-[70] flex items-end justify-center bg-[#262313]/55 p-3 backdrop-blur-[2px] sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="attendance-title"><div className="relative max-h-[92svh] w-full max-w-[430px] overflow-y-auto rounded-[2rem] border border-[#b29420]/30 bg-[#fffbea] px-5 pb-7 pt-10 text-[#796600] shadow-2xl sm:px-7"><button type="button" onClick={close} aria-label="Cerrar formulario" className="absolute right-4 top-4 rounded-full p-2 text-[#796600] transition hover:bg-[#f7e8a4]"><X size={20} /></button>{submitted ? <div className="py-5 text-center"><Check className="mx-auto mb-4 h-11 w-11 rounded-full bg-[#9b8500] p-2 text-white" />{accepted ? <><p className="text-[.66rem] font-semibold uppercase tracking-[.28em]">Tus ubicaciones asignadas</p><SeatAssignments assignments={seatAssignments} /><p className="mx-auto mt-5 max-w-[270px] text-sm leading-relaxed text-[#736423]">Te esperamos para celebrar juntos este día tan especial.</p></> : <><p className="text-xl font-semibold text-[#66590a]">Gracias por avisarnos.</p><p className="mx-auto mt-4 max-w-[270px] text-sm leading-relaxed text-[#736423]">Guardamos tu respuesta. Te extrañaremos en esta celebración.</p></>}{!saved && <p className="mx-auto mt-5 max-w-[290px] text-xs leading-relaxed text-[#736423]">Tu ubicación permanece visible aunque no haya sido posible enviar el registro.</p>}<button type="button" onClick={close} className="mt-7 rounded-xl bg-[#9b8500] px-6 py-3 text-[.68rem] font-semibold uppercase tracking-[.15em] text-white">Cerrar</button></div> : <form onSubmit={handleSubmit(onSubmit)}><p className="text-center text-[.66rem] font-semibold uppercase tracking-[.3em]">RSVP</p><h2 id="attendance-title" className="mt-3 text-center text-2xl font-semibold text-[#66590a]">Confirma tu asistencia</h2><p className="mx-auto mt-3 max-w-[290px] text-center text-sm leading-relaxed text-[#736423]">Esta invitación está reservada para <strong>{reservationText}</strong>.</p><div className="mt-5"><p className="text-center text-[.63rem] font-semibold uppercase tracking-[.2em] text-[#806b00]">Distribución de lugares</p><SeatAssignments assignments={seatAssignments} /></div><fieldset className="mt-6"><legend className="text-sm font-semibold text-[#66590a]">¿Podrán acompañarnos?</legend><div className="mt-3 grid grid-cols-2 gap-2"><label className="cursor-pointer rounded-xl border border-[#9b8500]/35 bg-white px-3 py-3 text-center text-sm has-[:checked]:border-[#9b8500] has-[:checked]:bg-[#fff0a9]"><input type="radio" value="si" className="sr-only" {...register('asistencia', { required: true })} />Sí, asistiré</label><label className="cursor-pointer rounded-xl border border-[#9b8500]/35 bg-white px-3 py-3 text-center text-sm has-[:checked]:border-[#9b8500] has-[:checked]:bg-[#fff0a9]"><input type="radio" value="no" className="sr-only" {...register('asistencia', { required: true })} />No podré asistir</label></div></fieldset>{attending && <div className="mt-6 space-y-5">{adultCount > 0 && <div><p className="mb-3 text-sm font-semibold text-[#66590a]">Nombres de los adultos</p><AttendeeNameFields category="adults" assignments={seatAssignments} register={register} errors={errors} /></div>}{kidsCount > 0 && <div><p className="mb-3 text-sm font-semibold text-[#66590a]">Nombres de los niños</p><AttendeeNameFields category="kids" assignments={seatAssignments} register={register} errors={errors} /></div>}</div>}<button type="submit" disabled={isSubmitting} className="mt-7 w-full rounded-xl bg-gradient-to-r from-[#aa7800] via-[#d8a714] to-[#aa7800] px-5 py-4 text-[.68rem] font-semibold uppercase tracking-[.16em] text-[#fff9d0] shadow-[0_8px_18px_rgba(127,86,0,.22)] disabled:cursor-wait disabled:opacity-70">{isSubmitting ? 'Guardando...' : 'Enviar confirmación'}</button></form>}</div></div>;
+}
+
 export function InvitacionXVLiz() {
     const searchParams = useSearchParams();
     const contentRef = useRef(null);
     const musicRef = useRef(null);
+    const coverTouchStartRef = useRef(0);
     const [opened, setOpened] = useState(false);
     const [rsvpOpen, setRsvpOpen] = useState(false);
     const [musicMuted, setMusicMuted] = useState(false);
@@ -266,11 +383,15 @@ export function InvitacionXVLiz() {
         const rawKids = getFirstParam(searchParams, ['ninos', 'niños', 'cantidadNinos'], '0');
         const parsedAdults = Number.parseInt(rawAdults, 10);
         const parsedKids = Number.parseInt(rawKids, 10);
+        const adultCount = Number.isFinite(parsedAdults) ? Math.min(Math.max(parsedAdults, 0), 20) : 1;
+        const kidsCount = Number.isFinite(parsedKids) ? Math.min(Math.max(parsedKids, 0), 20) : 0;
+        const assignedLocation = getFirstParam(searchParams, ['ubicacion', 'ubicación', 'locacion', 'locación', 'lugar'], 'Área Lounge');
         return {
             guestName: getFirstParam(searchParams, ['invitado', 'nombre', 'para', 'familia'], 'Familia invitada'),
-            adultCount: Number.isFinite(parsedAdults) ? Math.min(Math.max(parsedAdults, 0), 20) : 1,
-            kidsCount: Number.isFinite(parsedKids) ? Math.min(Math.max(parsedKids, 0), 20) : 0,
-            assignedLocation: getFirstParam(searchParams, ['ubicacion', 'ubicación', 'locacion', 'locación', 'lugar'], 'Área Lounge')
+            adultCount,
+            kidsCount,
+            assignedLocation,
+            seatAssignments: getSeatAssignments(searchParams, adultCount, kidsCount, assignedLocation),
         };
     }, [searchParams]);
 
@@ -291,6 +412,15 @@ export function InvitacionXVLiz() {
         setOpened(true);
         if (!musicMuted) musicRef.current?.play().catch(() => { });
         window.scrollTo({ top: 0, behavior: 'instant' });
+    };
+
+    const handleCoverTouchStart = (event) => {
+        coverTouchStartRef.current = event.touches[0]?.clientY ?? 0;
+    };
+
+    const handleCoverTouchEnd = (event) => {
+        const endPosition = event.changedTouches[0]?.clientY ?? 0;
+        if (coverTouchStartRef.current - endPosition > 42) open();
     };
 
     const toggleMusic = () => {
@@ -326,7 +456,7 @@ export function InvitacionXVLiz() {
 
             <div className="xv-paper mx-auto max-w-[480px] overflow-hidden shadow-[0_0_0_10px_#1d1d1d,0_0_40px_rgba(0,0,0,.55)]">
                 {!opened && (
-                    <button type="button" onClick={open} aria-label="Abrir invitación de los quince años de Marce" className="relative block min-h-svh w-full overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-[-4px] focus-visible:outline-[#9b8500]" style={{ backgroundColor: '#f8efa6', backgroundImage: `linear-gradient(rgba(255, 246, 165, .22), rgba(255, 246, 165, .22)), url('${PAPER}')`, backgroundPosition: 'center top', backgroundSize: '100% auto', backgroundRepeat: 'no-repeat' }}>
+                    <button type="button" onClick={open} onTouchStart={handleCoverTouchStart} onTouchEnd={handleCoverTouchEnd} aria-label="Abrir invitación de los quince años de Marce" className="relative block min-h-svh w-full overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-[-4px] focus-visible:outline-[#9b8500]" style={{ backgroundColor: '#f8efa6', backgroundImage: `linear-gradient(rgba(255, 246, 165, .22), rgba(255, 246, 165, .22)), url('${PAPER}')`, backgroundPosition: 'center top', backgroundSize: '100% auto', backgroundRepeat: 'no-repeat' }}>
                         <FloatingAsset src={ASSETS.daisy} className="-left-2 top-12 h-32 w-32" movement="xv-sway" imageClassName="-rotate-[12deg]" />
                         <FloatingAsset src={ASSETS.branch} className="left-[35%] top-16 h-16 w-28" movement="xv-sway-reverse" imageClassName="rotate-[9deg]" />
                         <FloatingAsset src={ASSETS.butterflies} className="right-[-86%] -top-[15%] h-[84%] w-[104%]" movement="xv-drift" imageClassName="origin-top-right scale-[1.45]" />
@@ -341,12 +471,16 @@ export function InvitacionXVLiz() {
                             <Asset src={ASSETS.name} alt="Marce" className="w-[74%] max-w-[310px]" />
                             <p className="relative -top-40 mt-8 text-[clamp(.9rem,4.2vw,1.16rem)] font-medium italic tracking-[.7em]">MIS XV AÑOS</p>
                         </div>
+                        <div className="pointer-events-none absolute inset-x-0 bottom-8 z-20 flex flex-col items-center text-[#8f7700]">
+                            <ChevronUp className="h-7 w-7 animate-bounce" strokeWidth={1.7} />
+                            <span className="mt-1 text-[.56rem] font-semibold uppercase tracking-[.22em]">Toca o desliza para abrir</span>
+                        </div>
                     </button>
                 )}
 
                 {opened && (
                     <div ref={contentRef} className="xv-content-paper">
-                        <PaperSection className="min-h-[860px] pt-20">
+                        <PaperSection className="min-h-[700px] pt-20">
                             <FloatingAsset src={ASSETS.branch} className="-left-3 top-8 h-20 w-32" movement="xv-sway" imageClassName="rotate-[18deg]" />
                             <FloatingAsset src={ASSETS.angel} className="left-[24%] top-20 h-40 w-40" movement="xv-float" />
                             <FloatingAsset src={ASSETS.miniDaisy} className="left-[56%] top-12 h-9 w-9" movement="xv-float-delayed" />
@@ -356,7 +490,7 @@ export function InvitacionXVLiz() {
                             <FloatingAsset src={ASSETS.branch} className="-right-10 top-32 h-24 w-36" movement="xv-sway-reverse" imageClassName="rotate-[18deg]" />
                             <FloatingAsset src={ASSETS.miniDaisy} className="-left-4 top-52 h-10 w-10" movement="xv-float" />
                             <FloatingAsset src={ASSETS.largeDaisy} className="-right-16 top-[35%] h-64 w-64" movement="xv-float" />
-                            <FloatingAsset src={ASSETS.daisy} className="left-14 bottom-40 h-32 w-32" movement="xv-float-delayed" />
+                            <FloatingAsset src={ASSETS.daisy} className="left-14 bottom-32 h-32 w-32" movement="xv-float-delayed" />
                             <FloatingAsset src={ASSETS.branch} className="left-[49%] bottom-36 h-20 w-32" movement="xv-sway" imageClassName="rotate-[28deg]" />
                             <FloatingAsset src={ASSETS.discoBall} className="-left-16 bottom-0 h-44 w-44 opacity-45" movement="xv-bob" imageClassName="xv-straight-ball" />
                             <Sparkles className="pointer-events-none absolute bottom-14 right-16 h-10 w-10 text-white" fill="white" strokeWidth={0} />
@@ -367,7 +501,7 @@ export function InvitacionXVLiz() {
                             </div>
                         </PaperSection>
 
-                        <PaperSection className="min-h-[1320px] pt-0">
+                        <PaperSection className="min-h-[1200px] pt-0">
                             <FloatingAsset src={ASSETS.daisy} className="left-[49%] top-16 h-28 w-28" movement="xv-float" />
                             <FloatingAsset src={ASSETS.branch} className="-left-8 top-[32%] h-24 w-36" movement="xv-sway" imageClassName="rotate-[55deg]" />
                             <FloatingAsset src={ASSETS.discoBall} className="-right-40 top-[30%] h-52 w-52 opacity-50" movement="xv-bob" imageClassName="xv-straight-ball" />
@@ -376,14 +510,14 @@ export function InvitacionXVLiz() {
                             <Sparkles className="pointer-events-none absolute left-9 top-[22%] h-10 w-10 text-white" fill="white" strokeWidth={0} />
                             <Sparkles className="pointer-events-none absolute right-10 top-[51%] h-10 w-10 text-white" fill="white" strokeWidth={0} />
 
-                            <div className="relative z-10 pt-60">
+                            <div className="relative z-10 pt-32">
                                 <Countdown />
                                 <Asset src={ASSETS.calendar} alt="Agenda en tu calendario" className="mx-auto mt-24 w-40" />
                                 <p className="mt-12 text-[.72rem] font-semibold uppercase tracking-[.38em]">31 de octubre de 2026</p>
                                 <SaveTheDate />
                             </div>
 
-                            <div className="relative z-10 mt-48 min-h-[620px]">
+                            <div className="relative z-10 mt-48 min-h-[430px]">
                                 <FloatingAsset src={ASSETS.dancer} className="-left-36 -top-44 h-[42rem] w-[22rem]" imageClassName="object-left" movement="xv-float" />
                                 <FloatingAsset src={ASSETS.miniDaisy} className="left-32 -top-6 h-10 w-10" movement="xv-float-delayed" />
                                 <FloatingAsset src={ASSETS.daisy} className="right-12 top-0 h-32 w-32" movement="xv-float-delayed" />
@@ -416,7 +550,7 @@ export function InvitacionXVLiz() {
                                 <p className="mx-auto mt-10 max-w-[315px] text-[.95rem] font-semibold uppercase leading-[1.45] tracking-[.22em]">Una mención especial<br />para mi hermanito Emilio,<br />que también con su acompañamiento<br />y cariño hace este día<br />aún más especial.</p>
                                 <div className="mt-28">
                                     <Asset src={ASSETS.church} alt="Capilla" className="mx-auto h-20 w-20 object-contain" />
-                                    <p className="mx-auto mt-16 max-w-[260px] text-[.66rem] font-semibold uppercase leading-[1.55] tracking-[.22em]">Capilla del Museo<br />San Juan del Obispo,<br />Antigua Guatemala<br /><span className="tracking-[.12em]">3:30 p.m.</span></p>
+                                    <p className="mx-auto mt-16 max-w-[280px] text-[.75rem] font-semibold uppercase leading-[1.55] tracking-[.22em]">Capilla del Museo<br />San Juan del Obispo,<br />Antigua Guatemala<br /><span className="tracking-[.12em]">3:30 p.m.</span></p>
                                     <MapLinks map={MASS_MAP} waze={MASS_WAZE} label="la capilla" />
                                 </div>
                             </div>
@@ -432,7 +566,7 @@ export function InvitacionXVLiz() {
                                 <div className="xv-bob mx-auto h-24 w-24">
                                     <Asset src={ASSETS.discoBall} alt="Esfera disco decorativa" className="xv-straight-ball h-full w-full object-contain" />
                                 </div>
-                                <p className="mx-auto mt-6 max-w-[260px] text-[.66rem] font-semibold uppercase leading-[1.7] tracking-[.22em]">Hotel Soleil,<br />Salón Los Volcanes<br />9na calle Poniente,<br />Antigua Guatemala<br /><span className="tracking-[.12em]">5:30 p.m.</span></p>
+                                <p className="mx-auto mt-6 max-w-[280px] text-[.75rem] font-semibold uppercase leading-[1.7] tracking-[.22em]">Hotel Soleil,<br />Salón Los Volcanes<br />9na calle Poniente,<br />Antigua Guatemala<br /><span className="tracking-[.12em]">5:30 p.m.</span></p>
                                 <MapLinks map={RECEPTION_MAP} waze={RECEPTION_WAZE} label="la recepción" />
                             </div>
                             <div className="relative z-10 mt-40">
