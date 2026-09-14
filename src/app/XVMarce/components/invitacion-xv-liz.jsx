@@ -75,23 +75,24 @@ function getSeatAssignments(params, adultCount, kidsCount, defaultLocation) {
     const assignments = [];
 
     customValues.forEach((value) => {
-        const [rawType, rawCount, ...rawLocation] = value.split('|').map((part) => part.trim());
+        const [rawType, rawCount, rawLocation = '', rawNames = ''] = value.split('|').map((part) => part.trim());
         const type = rawType?.toLocaleLowerCase('es') ?? '';
         const category = type.includes('niñ') || type.includes('nin') ? 'kids' : 'adults';
         const requestedCount = Number.parseInt(rawCount, 10);
         const available = category === 'kids' ? remainingKids : remainingAdults;
         const count = Math.min(Number.isFinite(requestedCount) ? requestedCount : 0, available);
-        const location = rawLocation.join('|').trim();
+        const location = rawLocation.trim();
+        const names = rawNames.split(';').map((name) => name.trim()).filter(Boolean).slice(0, count);
 
         if (!count || !location) return;
-        assignments.push({ category, count, location });
+        assignments.push({ category, count, location, names });
         if (category === 'kids') remainingKids -= count;
         else remainingAdults -= count;
     });
 
     const kidsLocation = getFirstParam(params, ['ubicacionNinos', 'ubicacionNiños', 'ubicacion_ninos', 'ubicacion_niños'], defaultLocation);
-    if (remainingAdults > 0) assignments.push({ category: 'adults', count: remainingAdults, location: defaultLocation });
-    if (remainingKids > 0) assignments.push({ category: 'kids', count: remainingKids, location: kidsLocation });
+    if (remainingAdults > 0) assignments.push({ category: 'adults', count: remainingAdults, location: defaultLocation, names: [] });
+    if (remainingKids > 0) assignments.push({ category: 'kids', count: remainingKids, location: kidsLocation, names: [] });
     return assignments;
 }
 
@@ -301,7 +302,8 @@ function AttendeeNameFields({ category, assignments, register }) {
         startIndex += assignment.count;
         return <section key={`${category}-${assignment.location}-${groupIndex}`} className="rounded-xl border border-[#a98a09]/20 bg-white/55 p-3"><div className="flex items-center justify-between gap-3"><p className="text-sm font-semibold text-[#66590a]">{assignmentLabel(assignment)}</p><span className="max-w-[62%] rounded-full border border-[#a98a09]/25 bg-[#fff4ba] px-2.5 py-1 text-right text-[.61rem] font-semibold uppercase leading-snug tracking-[.1em] text-[#806b00]">Área: {assignment.location}</span></div><div className="mt-3 space-y-2.5">{Array.from({ length: assignment.count }, (_, index) => {
             const fieldIndex = groupStart + index;
-            return <div key={fieldIndex}><label htmlFor={`${fieldName}-${fieldIndex}`} className="sr-only">{`Nombre del ${personLabel} ${fieldIndex + 1}`}</label><input id={`${fieldName}-${fieldIndex}`} type="text" autoComplete="name" placeholder={`Nombre del ${personLabel} ${fieldIndex + 1}`} className="w-full rounded-xl border border-[#9b8500]/30 bg-white px-4 py-3 text-sm text-[#51470a] outline-none placeholder:text-[#a79959] focus:border-[#9b8500] focus:ring-2 focus:ring-[#e8ce69]" {...register(`${fieldName}.${fieldIndex}`)} /></div>;
+            const assignedName = assignment.names?.[index];
+            return <div key={fieldIndex}>{assignedName && <p className="mb-1.5 text-xs font-semibold text-[#66590a]">{assignedName}</p>}<label htmlFor={`${fieldName}-${fieldIndex}`} className="sr-only">{`Nombre del ${personLabel} ${fieldIndex + 1}`}</label><input id={`${fieldName}-${fieldIndex}`} type="text" autoComplete="name" placeholder={`Nombre del ${personLabel} ${fieldIndex + 1}`} className="w-full rounded-xl border border-[#9b8500]/30 bg-white px-4 py-3 text-sm text-[#51470a] outline-none placeholder:text-[#a79959] focus:border-[#9b8500] focus:ring-2 focus:ring-[#e8ce69]" {...register(`${fieldName}.${fieldIndex}`)} /></div>;
         })}</div></section>;
     })}</div>;
 }
@@ -310,11 +312,12 @@ function AttendanceModal({ close, guestName, adultCount, kidsCount, assignedLoca
     const [submitted, setSubmitted] = useState(false);
     const [accepted, setAccepted] = useState(false);
     const [saved, setSaved] = useState(false);
+    const namesFor = (category, fallbackName = '') => seatAssignments.filter((assignment) => assignment.category === category).flatMap((assignment) => Array.from({ length: assignment.count }, (_, index) => assignment.names?.[index] || '')).map((name, index) => name || (index === 0 ? fallbackName : ''));
     const { register, handleSubmit, watch, formState: { isSubmitting } } = useForm({
         defaultValues: {
             asistencia: 'si',
-            adultos: Array.from({ length: adultCount }, (_, index) => (index === 0 ? guestName : '')),
-            ninos: Array.from({ length: kidsCount }, () => ''),
+            adultos: namesFor('adults', guestName),
+            ninos: namesFor('kids'),
         },
     });
     const attending = watch('asistencia') !== 'no';
@@ -413,14 +416,22 @@ export function InvitacionXVLiz() {
         if (opened && !musicMuted) music.play().catch(() => { });
     }, [opened, musicMuted]);
 
+    const playMusicFromGesture = () => {
+        const music = musicRef.current;
+        if (!music || musicMuted) return;
+        music.muted = false;
+        music.play().catch(() => { });
+    };
+
     const open = () => {
         setOpened(true);
-        if (!musicMuted) musicRef.current?.play().catch(() => { });
+        playMusicFromGesture();
         window.scrollTo({ top: 0, behavior: 'instant' });
     };
 
     const handleCoverTouchStart = (event) => {
         coverTouchStartRef.current = event.touches[0]?.clientY ?? 0;
+        playMusicFromGesture();
     };
 
     const handleCoverTouchEnd = (event) => {
@@ -445,7 +456,7 @@ export function InvitacionXVLiz() {
             `}</style>
 
             <Toaster position="top-center" />
-            <audio ref={musicRef} src="/musica_xv_liz.mp3" loop preload="auto" />
+            <audio ref={musicRef} src="/musica_xv_liz.mp3" loop preload="auto" playsInline />
 
             {opened && (
                 <button type="button" onClick={toggleMusic} aria-label={musicMuted ? 'Activar música' : 'Silenciar música'} aria-pressed={musicMuted} className="fixed bottom-5 right-5 z-[60] grid h-9 w-9 place-items-center rounded-full border border-[#a7860b]/45 bg-[#fff8cd]/85 text-[#8d7500] shadow-md backdrop-blur transition hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8d7500]">
