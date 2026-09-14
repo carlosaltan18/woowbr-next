@@ -591,7 +591,7 @@ export function InvitacionXVLiz() {
                                 <p className="mt-10 text-[.9rem] font-medium uppercase tracking-[.52em]">Reservemos</p>
                                 <div className="mt-8 flex justify-center gap-6" aria-label="Colores reservados">
                                     <span className="h-8 w-8 rounded-full border border-[#3f3a12] bg-[#fde26e]" />
-                                    <span className="h-8 w-8 rounded-full border border-[#3f3a12] bg-[#f9e4ea]" />
+                                    <span className="h-8 w-8 rounded-full border border-[#3f3a12] bg-[#fb8cac]" />
                                     <span className="h-8 w-8 rounded-full border border-[#c89d12] bg-gradient-to-r from-[#d7a715] to-[#f9d957]" />
                                 </div>
                                 <p className="mt-7 text-[.6rem] font-semibold uppercase tracking-[.35em]">Estos colores<br />para nuestra quinceañera</p>
