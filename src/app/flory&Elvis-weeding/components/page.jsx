@@ -19,7 +19,7 @@ const ASSETS = {
     button: 'https://res.cloudinary.com/dclzsvu62/image/upload/v1790266207/boto_ün_bfqwjg.webp',
 };
 
-const PAPER_BACKGROUND = '/fondo_boda_fiora.png';
+const PAPER_BACKGROUND = '/fondo_boda_fiora.webp';
 const WEDDING_DATE = new Date('2026-11-28T14:30:00-06:00');
 const MASS_MAP = 'https://www.google.com/maps/search/?api=1&query=Iglesia+El+Calvario+Antigua+Guatemala';
 const RECEPTION_MAP = 'https://www.google.com/maps/search/?api=1&query=Jard%C3%ADn+Vilaflor+Km+32.5+San+Lucas+Sacatep%C3%A9quez';
@@ -165,6 +165,8 @@ function FioraCanvasV3({ reservation, rsvpOpen, setRsvpOpen }) {
         main > div.relative > div:nth-of-type(7) > img:first-of-type {
             width: 5rem !important;
             height: 5rem !important;
+            margin-top: .85rem !important;
+            transform: translateY(.45rem);
         }
         main > div.relative > div:nth-of-type(7) > p:nth-of-type(2)::before {
             content: 'PARA ESTE DÍA ESPECIAL';
@@ -177,18 +179,18 @@ function FioraCanvasV3({ reservation, rsvpOpen, setRsvpOpen }) {
         }
         main > div.relative > div:nth-of-type(7) > p:first-of-type {
             font-size: 0 !important;
-            margin-top: 1rem !important;
+            margin-top: .25rem !important;
         }
         main > div.relative > div:nth-of-type(7) > p:first-of-type::after {
             content: '';
             display: block;
-            width: 8rem;
-            height: 2.5rem;
+            width: 7.5rem;
+            height: 6.2rem;
             margin: 0 auto;
-            background: url('https://res.cloudinary.com/dclzsvu62/image/upload/v1790266201/Formal_b86oqh.webp') center / 110% auto no-repeat;
+            background: url('https://res.cloudinary.com/dclzsvu62/image/upload/v1790266201/Formal_b86oqh.webp') center / contain no-repeat;
         }
         main > div.relative > div:nth-of-type(7) > p:nth-of-type(2) {
-            margin-top: .85rem !important;
+            margin-top: .2rem !important;
             font-size: .55rem !important;
             font-weight: 500 !important;
             line-height: 2.1 !important;
@@ -198,10 +200,10 @@ function FioraCanvasV3({ reservation, rsvpOpen, setRsvpOpen }) {
         main > div.relative > div:nth-of-type(7) > img:nth-of-type(2) {
             width: 4.1rem !important;
             height: 4.1rem !important;
-            margin-top: 2.75rem !important;
+            margin-top: 1.55rem !important;
         }
         main > div.relative > div:nth-of-type(7) > p:nth-of-type(3) {
-            margin-top: .85rem !important;
+            margin-top: .55rem !important;
             font-size: .48rem !important;
             font-weight: 500 !important;
             line-height: 1.85 !important;
@@ -283,22 +285,34 @@ function FioraCanvasV3({ reservation, rsvpOpen, setRsvpOpen }) {
             top: 89.55%;
             left: 50%;
             z-index: 3;
-            display: block;
+            display: grid;
             box-sizing: border-box;
             width: 11.5rem;
             height: 4.15rem;
             transform: translateX(-50%);
-            padding: 1.18rem 1.55rem 0;
+            padding: 0;
             background: url('https://res.cloudinary.com/dclzsvu62/image/upload/v1790266207/boto_ün_bfqwjg.webp') center / contain no-repeat;
+            color: #fffdf5;
+            font-size: 0;
+            font-weight: 500;
+            letter-spacing: .1em;
+            line-height: 1;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .fiora-gift-link::after {
+            content: 'MESA DE REGALOS\A HAZ CLIC AQUÍ';
+            display: block;
+            place-self: center;
             color: #fffdf5;
             font-size: .4rem;
             font-weight: 500;
-            letter-spacing: .1em;
             line-height: 1.45;
+            letter-spacing: .1em;
             text-align: center;
-            text-decoration: none;
-            white-space: nowrap;
-            cursor: pointer;
+            white-space: pre-line;
+            transform: translateY(-.35rem);
         }
         .fiora-rsvp-canvas {
             position: absolute;
@@ -308,6 +322,15 @@ function FioraCanvasV3({ reservation, rsvpOpen, setRsvpOpen }) {
             width: min(100%, 430px);
             transform: translateX(-50%);
             color: #fffdf5;
+            text-align: center;
+        }
+        .fiora-rsvp-canvas > img { display: none; }
+        .fiora-rsvp-canvas > div {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            padding: 0 !important;
+            line-height: 1;
             text-align: center;
         }
         .fiora-footer {
@@ -330,13 +353,15 @@ function FioraCanvasV3({ reservation, rsvpOpen, setRsvpOpen }) {
         .fiora-footer > div { display: flex; justify-content: center; gap: 1rem; }
         .fiora-social {
             display: inline-block;
-            width: 1.05rem;
-            height: 1.05rem;
+            width: 1.25rem;
+            height: 1.25rem;
             background: #111;
+            transition: transform .18s ease, opacity .18s ease;
         }
-        .fiora-facebook { -webkit-mask: url('https://cdn.jsdelivr.net/npm/@tabler/icons@latest/icons/filled/brand-facebook.svg') center / contain no-repeat; mask: url('https://cdn.jsdelivr.net/npm/@tabler/icons@latest/icons/filled/brand-facebook.svg') center / contain no-repeat; }
+        .fiora-social:hover { transform: translateY(-2px); opacity: .72; }
+        .fiora-facebook { -webkit-mask: url('https://cdn.jsdelivr.net/npm/@tabler/icons@latest/icons/outline/brand-facebook.svg') center / contain no-repeat; mask: url('https://cdn.jsdelivr.net/npm/@tabler/icons@latest/icons/outline/brand-facebook.svg') center / contain no-repeat; }
         .fiora-instagram { -webkit-mask: url('https://cdn.jsdelivr.net/npm/@tabler/icons@latest/icons/outline/brand-instagram.svg') center / contain no-repeat; mask: url('https://cdn.jsdelivr.net/npm/@tabler/icons@latest/icons/outline/brand-instagram.svg') center / contain no-repeat; }
-        .fiora-tiktok { -webkit-mask: url('https://cdn.jsdelivr.net/npm/@tabler/icons@latest/icons/filled/brand-tiktok.svg') center / contain no-repeat; mask: url('https://cdn.jsdelivr.net/npm/@tabler/icons@latest/icons/filled/brand-tiktok.svg') center / contain no-repeat; }
+        .fiora-tiktok { -webkit-mask: url('https://cdn.jsdelivr.net/npm/@tabler/icons@latest/icons/outline/brand-tiktok.svg') center / contain no-repeat; mask: url('https://cdn.jsdelivr.net/npm/@tabler/icons@latest/icons/outline/brand-tiktok.svg') center / contain no-repeat; }
         button[aria-label='Silenciar música'],
         button[aria-label='Activar música'] {
             width: 2.8rem;
