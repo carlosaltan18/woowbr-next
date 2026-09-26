@@ -21,8 +21,8 @@ const ASSETS = {
 
 const PAPER_BACKGROUND = '/fondo_boda_fiora.webp';
 const WEDDING_DATE = new Date('2026-11-28T14:30:00-06:00');
-const MASS_MAP = 'https://www.google.com/maps/search/?api=1&query=Iglesia+El+Calvario+Antigua+Guatemala';
-const RECEPTION_MAP = 'https://www.google.com/maps/search/?api=1&query=Jard%C3%ADn+Vilaflor+Km+32.5+San+Lucas+Sacatep%C3%A9quez';
+const MASS_MAP = 'https://www.waze.com/es/live-map/directions/iglesia-el-calvario-9a-avenida-san-miguel-petapa?to=place.w.176554129.1765803434.2702672';
+const RECEPTION_MAP = 'https://www.waze.com/es-419/live-map/directions/jardin-vilaflor-san-lucas-sacatepequez?to=place.w.176488594.1765148083.13527705';
 const RSVP_SPREADSHEET_ID = '1GHgwJ7eUy4Z3E79W3NRujOnjuTv83_yZYcVcaHXJQn8';
 const RSVP_SHEET_RANGE = 'Hoja 1!A:F';
 const RSVP_HEADERS = ['Invitado principal', 'Respuesta', 'Nombres confirmados', 'Lugares confirmados', 'Lugares reservados', 'Fecha de registro'];
@@ -66,11 +66,11 @@ function RsvpModal({ guestName, reservedSeats, close }) {
     const [names, setNames] = useState(() => Array.from({ length: reservedSeats }, (_, index) => index === 0 ? guestName : ''));
     const [submitting, setSubmitting] = useState(false); const [confirmed, setConfirmed] = useState(false); const [message, setMessage] = useState('');
     const options = [['misa', 'Solo a la ceremonia'], ['fiesta', 'Solo a la recepción'], ['ambas', 'A la ceremonia y recepción'], ['ninguna', 'No podré asistir']];
-    const label = options.find(([value]) => value === answer)?.[1] ?? ''; const attending = answer && answer !== 'ninguna'; const confirmedNames = names.map((name) => name.trim()).filter(Boolean);
+    const label = options.find(([value]) => value === answer)?.[1] ?? ''; const attending = Boolean(answer); const confirmedNames = names.map((name) => name.trim()).filter(Boolean);
     const updateName = (index, value) => setNames((current) => current.map((name, nameIndex) => index === nameIndex ? value : name));
     const submit = async () => {
         if (!answer || submitting) return;
-        if (attending && !confirmedNames.length) { setMessage('Escribe al menos el nombre de una persona que asistirá.'); return; }
+        if (attending && !confirmedNames.length) { setMessage('Escribe al menos el nombre de una persona.'); return; }
         setMessage(''); setSubmitting(true);
         try {
             const response = await fetch('/api/registrarInvitado/registrar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ spreadsheetId: RSVP_SPREADSHEET_ID, range: RSVP_SHEET_RANGE, headers: RSVP_HEADERS, values: [guestName, label, confirmedNames.join(', ') || 'Sin asistentes', String(confirmedNames.length), String(reservedSeats), new Date().toLocaleString('es-GT', { timeZone: 'America/Guatemala', dateStyle: 'short', timeStyle: 'short' })] }) });
@@ -221,7 +221,7 @@ function FioraCanvasV3({ reservation, rsvpOpen, setRsvpOpen }) {
         }
         main > div.relative > div:nth-of-type(7) > img:nth-of-type(3) { display: none; }
         main > div.relative > div:nth-of-type(7)::after {
-            content: 'MESA DE REGALOS\\A HAZ CLIC AQUÍ';
+            content: 'MESA DE REGALOS\\';
             display: grid;
             width: 11.5rem;
             height: 4.15rem;
@@ -302,7 +302,7 @@ function FioraCanvasV3({ reservation, rsvpOpen, setRsvpOpen }) {
             cursor: pointer;
         }
         .fiora-gift-link::after {
-            content: 'MESA DE REGALOS\A HAZ CLIC AQUÍ';
+            content: 'MESA DE REGALOS';
             display: block;
             place-self: center;
             color: #fffdf5;
@@ -312,7 +312,22 @@ function FioraCanvasV3({ reservation, rsvpOpen, setRsvpOpen }) {
             letter-spacing: .1em;
             text-align: center;
             white-space: pre-line;
-            transform: translateY(-.35rem);
+            transform: translateY(-.6rem);
+        }
+        [role='dialog'] fieldset:has(input[value='ninguna']:checked) + div > p:first-child,
+        [role='dialog'] fieldset:has(input[value='ninguna']:checked) + div > p:nth-child(2) {
+            font-size: 0 !important;
+        }
+        [role='dialog'] fieldset:has(input[value='ninguna']:checked) + div > p:first-child::after {
+            content: 'Nombres de quienes no asistirán';
+            font-size: .57rem;
+            font-weight: 500;
+            letter-spacing: .15em;
+        }
+        [role='dialog'] fieldset:has(input[value='ninguna']:checked) + div > p:nth-child(2)::after {
+            content: 'Indica quienes no asistirán; los demás espacios pueden quedar vacíos.';
+            font-size: .75rem;
+            line-height: 1.5;
         }
         .fiora-rsvp-canvas {
             position: absolute;
