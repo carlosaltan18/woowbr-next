@@ -13,7 +13,14 @@ const PHOTOS = {
     storyTwo: 'https://res.cloudinary.com/dclzsvu62/image/upload/v1789881811/WhatsApp_Image_2026-09-17_at_9.22.57_PM_cxzpau.jpg',
     storyThree: 'https://res.cloudinary.com/dclzsvu62/image/upload/v1789881804/WhatsApp_Image_2026-09-17_at_9.25.34_PM_fpgk6h.jpg'
 };
-const STORY_PHOTO_URLS = new Set([PHOTOS.storyOne, PHOTOS.storyTwo, PHOTOS.storyThree, PHOTOS.storyFour, PHOTOS.storyFive]);
+const STORY_PHOTOS = [
+    { source: PHOTOS.storyFour, alt: 'Ariana y Mario' },
+    { source: PHOTOS.storyFive, alt: 'Ariana y Mario' },
+    { source: PHOTOS.storyOne, alt: 'Ariana y Mario' },
+    { source: PHOTOS.storyTwo, alt: 'Ariana y Mario' },
+    { source: PHOTOS.storyThree, alt: 'Ariana y Mario' },
+];
+const STORY_PHOTO_URLS = new Set(STORY_PHOTOS.map((photo) => photo.source));
 
 const MASS_MAP = 'https://www.google.com/maps/place/San+Miguel+Febres+Cordero/@14.5512514,-90.5502701,17z/data=!3m1!4b1!4m6!3m5!1s0x8589a6c5c67f66f7:0xf9b22b652ce365b3!8m2!3d14.5512514!4d-90.5502701!16s%2Fg%2F1wfvmzxb?entry=ttu&g_ep=EgoyMDI2MDkxNi4wIKXMDSoASAFQAw%3D%3D';
 const RECEPTION_MAP = 'https://www.google.com/maps/place/Sal%C3%B3n+San+Jos%C3%A9+La+Quinta/@14.6415284,-90.5028569,17z/data=!4m6!3m5!1s0x8589a3004a2a3cc1:0x3a806c05f96f093!8m2!3d14.6422512!4d-90.5043804!16s%2Fg%2F11ypb1l2kz?entry=ttu&g_ep=EgoyMDI2MDkxNi4wIKXMDSoASAFQAw%3D%3D';
@@ -23,8 +30,8 @@ const DRESS_CODE_IMAGE = 'https://res.cloudinary.com/dclzsvu62/image/upload/v177
 const RINGS_IMAGE = 'https://res.cloudinary.com/dclzsvu62/image/upload/v1754617619/bodas-woowbe/uvbyhplyhq2xgruj8rox.png';
 const GOOGLE_CALENDAR_URL = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=Ariana+Cortez+y+Mario+de+Le%C3%B3n&dates=20261017T210000Z%2F20261018T030000Z&details=Misa%3A+3%3A00+p.+m.+en+Iglesia+San+Miguel+Febres+Cordero%2C+Zona+21.%0AReuni%C3%B3n%3A+6%3A00+p.+m.+en+Sal%C3%B3n+San+Jos%C3%A9+La+Quinta%2C+5ta+Calle+14-21%2C+zona+1.&location=Iglesia+San+Miguel+Febres+Cordero+y+Sal%C3%B3n+San+Jos%C3%A9+La+Quinta%2C+Guatemala';
 const RSVP_SPREADSHEET_ID = '1wT3MSA48CD1ZFngMJbCe9r8LVbZ3Vu8g936xLlcLjqA';
-const RSVP_SHEET_RANGE = 'Hoja 1!A:F';
-const RSVP_HEADERS = ['Invitado principal', 'Respuesta', 'Nombres confirmados', 'Lugares confirmados', 'Lugares reservados', 'Fecha de registro'];
+const RSVP_SHEET_RANGE = 'Hoja 1!A:G';
+const RSVP_HEADERS = ['Invitado principal', 'Respuesta', 'Nombres confirmados', 'Nombres que no asistirán', 'Lugares confirmados', 'Lugares reservados', 'Fecha de registro'];
 
 function getCount(searchParams, names, fallback = 0) {
     for (const name of names) {
@@ -89,17 +96,26 @@ function RsvpModal({ close, guestName, reservedSeats }) {
     const [answer, setAnswer] = useState('');
     const [confirmed, setConfirmed] = useState(false);
     const [attendeeNames, setAttendeeNames] = useState(() => Array.from({ length: reservedSeats }, (_, index) => (index === 0 ? guestName : '')));
+    const [nonAttendeeNames, setNonAttendeeNames] = useState(() => Array.from({ length: reservedSeats }, () => ''));
     const [message, setMessage] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const options = [['misa', 'Solo a la misa'], ['fiesta', 'Solo a la fiesta'], ['ambas', 'A la misa y a la fiesta'], ['ninguna', 'No podré asistir']];
     const isAttending = answer && answer !== 'ninguna';
+    const isNotAttending = answer === 'ninguna';
     const label = options.find(([value]) => value === answer)?.[1];
     const listedAttendees = attendeeNames.map((name) => name.trim()).filter(Boolean);
+    const listedNonAttendees = nonAttendeeNames.map((name) => name.trim()).filter(Boolean);
+
+    const updateName = (setter) => (index, value) => setter((current) => current.map((name, nameIndex) => nameIndex === index ? value : name));
 
     const confirm = async () => {
         if (!answer) return;
         if (isAttending && listedAttendees.length === 0) {
             setMessage('Escribe al menos un nombre de las personas que asistirán.');
+            return;
+        }
+        if (isNotAttending && listedNonAttendees.length === 0) {
+            setMessage('Escribe el nombre de al menos una persona que no asistirá.');
             return;
         }
         setMessage('');
@@ -116,6 +132,7 @@ function RsvpModal({ close, guestName, reservedSeats }) {
                         guestName,
                         label,
                         listedAttendees.join(', ') || 'Sin asistentes',
+                        listedNonAttendees.join(', ') || 'Sin personas indicadas',
                         String(listedAttendees.length),
                         String(reservedSeats),
                         new Date().toLocaleString('es-GT', { timeZone: 'America/Guatemala', dateStyle: 'short', timeStyle: 'short' }),
@@ -132,9 +149,9 @@ function RsvpModal({ close, guestName, reservedSeats }) {
         }
     };
 
-    const updateName = (index, value) => setAttendeeNames((current) => current.map((name, nameIndex) => nameIndex === index ? value : name));
+    const NameInputs = ({ names, onChange, title, help, placeholder }) => <div className="mt-7"><p className="text-[.62rem] font-bold uppercase tracking-[.16em] text-[#6E7349]">{title}</p><p className="mt-2 text-xs leading-relaxed text-[#6E7349]">{help}</p><div className="mt-4 space-y-3">{names.map((name, index) => <input key={index} type="text" value={name} onChange={(event) => onChange(index, event.target.value)} placeholder={`${placeholder} ${index + 1}`} className="w-full border-b border-[#D0C9A5] bg-transparent px-1 py-3 text-sm text-[#565936] outline-none placeholder:text-[#8f926f] focus:border-[#6E723A]" />)}</div></div>;
 
-    return <div className="fixed inset-0 z-[80] flex items-end justify-center bg-[#2e3020]/55 p-3 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="rsvp-title"><div className="relative max-h-[93svh] w-full max-w-[390px] overflow-y-auto rounded-[2rem] bg-[#fffdf5] px-6 pb-8 pt-10 text-[#565936] shadow-2xl"><button type="button" onClick={close} className="absolute right-4 top-4 rounded-full p-2 text-[#6E723A] transition hover:bg-[#D0C9A5]/35" aria-label="Cerrar"><X size={19} /></button>{confirmed ? <div className="py-5 text-center"><Check className="mx-auto h-12 w-12 rounded-full bg-[#6E723A] p-3 text-[#fffdf5]" /><p className="mt-5 text-[.58rem] font-bold uppercase tracking-[.25em] text-[#6E7349]">Respuesta registrada</p><h3 className="mt-3 font-serif text-3xl italic text-[#6E723A]">{label}</h3><p className="mx-auto mt-4 max-w-[250px] text-sm leading-relaxed">Gracias, {guestName}. {listedAttendees.length > 0 ? `${listedAttendees.length} ${listedAttendees.length === 1 ? 'persona asistirá' : 'personas asistirán'}.` : 'Agradecemos que nos hayas avisado.'}</p><button type="button" onClick={close} className="mt-7 rounded-full bg-[#6E723A] px-6 py-3 text-[.62rem] font-bold uppercase tracking-[.15em] text-[#fffdf5]">Cerrar</button></div> : <div><p className="text-center text-[.58rem] font-bold uppercase tracking-[.28em] text-[#6E7349]">RSVP</p><h2 id="rsvp-title" className="mt-3 text-center font-serif text-3xl italic text-[#6E723A]">Confirma tu asistencia</h2><p className="mx-auto mt-4 max-w-[270px] text-center text-sm leading-relaxed">Hemos reservado <strong>{reservedSeats} {reservedSeats === 1 ? 'lugar' : 'lugares'}</strong> para esta invitación.</p><fieldset className="mt-7"><legend className="mb-3 text-[.62rem] font-bold uppercase tracking-[.16em] text-[#6E7349]">¿Cómo nos acompañarás?</legend><div className="divide-y divide-[#D0C9A5]/80 border-y border-[#D0C9A5]/80">{options.map(([value, option]) => <label key={value} className="flex cursor-pointer items-center gap-3 py-3 text-sm has-[:checked]:text-[#6E723A]"><input type="radio" name="attendance" value={value} checked={answer === value} onChange={(event) => { setAnswer(event.target.value); setMessage(''); }} className="accent-[#6E723A]" />{option}</label>)}</div></fieldset>{isAttending && <div className="mt-7"><p className="text-[.62rem] font-bold uppercase tracking-[.16em] text-[#6E7349]">Nombres de quienes asistirán</p><p className="mt-2 text-xs leading-relaxed text-[#6E7349]">Completa solo los lugares que sí utilizarán; puedes dejar los demás vacíos.</p><div className="mt-4 space-y-3">{attendeeNames.map((name, index) => <input key={index} type="text" value={name} onChange={(event) => updateName(index, event.target.value)} placeholder={`Nombre de la persona ${index + 1}`} className="w-full border-b border-[#D0C9A5] bg-transparent px-1 py-3 text-sm text-[#565936] outline-none placeholder:text-[#8f926f] focus:border-[#6E723A]" />)}</div></div>}{message && <p className="mt-4 text-center text-xs text-red-700">{message}</p>}<button type="button" disabled={!answer || submitting} onClick={confirm} className="mt-8 w-full rounded-full bg-[#6E723A] px-5 py-3.5 text-[.62rem] font-bold uppercase tracking-[.16em] text-[#fffdf5] transition hover:bg-[#565936] disabled:cursor-not-allowed disabled:opacity-45">{submitting ? 'Guardando…' : 'Confirmar'}</button><p className="mt-3 text-center text-xs leading-relaxed text-[#6E7349]">Tu respuesta se guardará en la lista de invitados.</p></div>}</div></div>;
+    return <div className="fixed inset-0 z-[80] flex items-end justify-center bg-[#2e3020]/55 p-3 backdrop-blur-sm sm:items-center" role="dialog" aria-modal="true" aria-labelledby="rsvp-title"><div className="relative max-h-[93svh] w-full max-w-[390px] overflow-y-auto rounded-[2rem] bg-[#fffdf5] px-6 pb-8 pt-10 text-[#565936] shadow-2xl"><button type="button" onClick={close} className="absolute right-4 top-4 rounded-full p-2 text-[#6E723A] transition hover:bg-[#D0C9A5]/35" aria-label="Cerrar"><X size={19} /></button>{confirmed ? <div className="py-5 text-center"><Check className="mx-auto h-12 w-12 rounded-full bg-[#6E723A] p-3 text-[#fffdf5]" /><p className="mt-5 text-[.58rem] font-bold uppercase tracking-[.25em] text-[#6E7349]">Respuesta registrada</p><h3 className="mt-3 font-serif text-3xl italic text-[#6E723A]">{label}</h3><p className="mx-auto mt-4 max-w-[250px] text-sm leading-relaxed">Gracias, {guestName}. {isNotAttending ? `${listedNonAttendees.length} ${listedNonAttendees.length === 1 ? 'persona no asistirá.' : 'personas no asistirán.'}` : `${listedAttendees.length} ${listedAttendees.length === 1 ? 'persona asistirá.' : 'personas asistirán.'}`}</p><button type="button" onClick={close} className="mt-7 rounded-full bg-[#6E723A] px-6 py-3 text-[.62rem] font-bold uppercase tracking-[.15em] text-[#fffdf5]">Cerrar</button></div> : <div><p className="text-center text-[.58rem] font-bold uppercase tracking-[.28em] text-[#6E7349]">RSVP</p><h2 id="rsvp-title" className="mt-3 text-center font-serif text-3xl italic text-[#6E723A]">Confirma tu asistencia</h2><p className="mx-auto mt-4 max-w-[270px] text-center text-sm leading-relaxed">Hemos reservado <strong>{reservedSeats} {reservedSeats === 1 ? 'lugar' : 'lugares'}</strong> para esta invitación.</p><fieldset className="mt-7"><legend className="mb-3 text-[.62rem] font-bold uppercase tracking-[.16em] text-[#6E7349]">¿Cómo nos acompañarás?</legend><div className="divide-y divide-[#D0C9A5]/80 border-y border-[#D0C9A5]/80">{options.map(([value, option]) => <label key={value} className="flex cursor-pointer items-center gap-3 py-3 text-sm has-[:checked]:text-[#6E723A]"><input type="radio" name="attendance" value={value} checked={answer === value} onChange={(event) => { setAnswer(event.target.value); setMessage(''); }} className="accent-[#6E723A]" />{option}</label>)}</div></fieldset>{isAttending && <NameInputs names={attendeeNames} onChange={updateName(setAttendeeNames)} title="Nombres de quienes asistirán" help="Completa solo los lugares que sí utilizarán; puedes dejar los demás vacíos." placeholder="Nombre de la persona" />}{answer && <NameInputs names={nonAttendeeNames} onChange={updateName(setNonAttendeeNames)} title="Nombres de quienes no asistirán" help={isNotAttending ? 'Indica al menos una persona para registrar que no podrá asistir.' : 'Este campo es opcional si alguna persona de la invitación no podrá acompañarnos.'} placeholder="Nombre de la persona" />}{message && <p className="mt-4 text-center text-xs text-red-700">{message}</p>}<button type="button" disabled={!answer || submitting} onClick={confirm} className="mt-8 w-full rounded-full bg-[#6E723A] px-5 py-3.5 text-[.62rem] font-bold uppercase tracking-[.16em] text-[#fffdf5] transition hover:bg-[#565936] disabled:cursor-not-allowed disabled:opacity-45">{submitting ? 'Guardando…' : 'Confirmar'}</button><p className="mt-3 text-center text-xs leading-relaxed text-[#6E7349]">Tu respuesta se guardará en la lista de invitados.</p></div>}</div></div>;
 }
 
 export function InvitacionDeLeonCortez() {
@@ -192,8 +209,9 @@ export function InvitacionDeLeonCortez() {
             const image = event.target;
             if (!(image instanceof HTMLImageElement)) return;
             const source = image.currentSrc || image.src;
-            if (!STORY_PHOTO_URLS.has(source)) return;
-            setSelectedStoryPhoto({ source, alt: image.alt || 'Foto de Ariana y Mario' });
+            const photoIndex = STORY_PHOTOS.findIndex((photo) => photo.source === source);
+            if (photoIndex === -1) return;
+            setSelectedStoryPhoto(photoIndex);
         };
         const storyImages = Array.from(document.images).filter((image) => STORY_PHOTO_URLS.has(image.currentSrc || image.src));
         storyImages.forEach((image) => { image.style.cursor = 'zoom-in'; });
@@ -202,40 +220,69 @@ export function InvitacionDeLeonCortez() {
     }, []);
 
     useEffect(() => {
-        if (!selectedStoryPhoto) return undefined;
+        if (selectedStoryPhoto === null) return undefined;
+        const activePhoto = STORY_PHOTOS[selectedStoryPhoto];
         const previousOverflow = document.body.style.overflow;
         const overlay = document.createElement('div');
         const dialog = document.createElement('div');
         const image = document.createElement('img');
-        const close = document.createElement('button');
+        const previous = document.createElement('button');
+        const next = document.createElement('button');
+        const hint = document.createElement('p');
         const closeLightbox = () => setSelectedStoryPhoto(null);
-        const handleKeyDown = (event) => { if (event.key === 'Escape') closeLightbox(); };
+        const movePhoto = (direction) => setSelectedStoryPhoto((current) => (current + direction + STORY_PHOTOS.length) % STORY_PHOTOS.length);
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') closeLightbox();
+            if (event.key === 'ArrowLeft') movePhoto(-1);
+            if (event.key === 'ArrowRight') movePhoto(1);
+        };
+        let touchStartX = null;
+        const handleTouchStart = (event) => { touchStartX = event.changedTouches[0]?.clientX ?? null; };
+        const handleTouchEnd = (event) => {
+            const touchEndX = event.changedTouches[0]?.clientX;
+            if (touchStartX === null || typeof touchEndX !== 'number') return;
+            const distance = touchEndX - touchStartX;
+            if (Math.abs(distance) > 42) movePhoto(distance > 0 ? -1 : 1);
+            touchStartX = null;
+        };
         document.body.style.overflow = 'hidden';
         overlay.setAttribute('role', 'presentation');
         overlay.style.cssText = 'position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:1.5rem;background:rgba(20,23,12,.82);backdrop-filter:blur(5px);';
         dialog.setAttribute('role', 'dialog');
         dialog.setAttribute('aria-modal', 'true');
-        dialog.setAttribute('aria-label', selectedStoryPhoto.alt);
+        dialog.setAttribute('aria-label', activePhoto.alt);
+        dialog.tabIndex = -1;
         dialog.style.cssText = 'position:relative;max-height:90svh;max-width:min(92vw,680px);';
-        image.src = selectedStoryPhoto.source;
-        image.alt = selectedStoryPhoto.alt;
-        image.style.cssText = 'display:block;max-height:90svh;max-width:100%;border-radius:1rem;object-fit:contain;box-shadow:0 25px 70px rgba(0,0,0,.55);';
-        close.type = 'button';
-        close.setAttribute('aria-label', 'Cerrar foto ampliada');
-        close.textContent = '×';
-        close.style.cssText = 'position:absolute;right:-.65rem;top:-.65rem;width:2.35rem;height:2.35rem;border:0;border-radius:9999px;background:#fffdf5;color:#565936;font-size:1.7rem;line-height:1;box-shadow:0 8px 24px rgba(0,0,0,.3);cursor:pointer;';
-        close.addEventListener('click', closeLightbox);
+        image.src = activePhoto.source;
+        image.alt = activePhoto.alt;
+        image.style.cssText = 'display:block;max-height:90svh;max-width:100%;border-radius:1rem;object-fit:contain;touch-action:pan-y;box-shadow:0 25px 70px rgba(0,0,0,.55);';
+        previous.type = 'button';
+        previous.setAttribute('aria-label', 'Ver foto anterior');
+        previous.textContent = '‹';
+        next.type = 'button';
+        next.setAttribute('aria-label', 'Ver foto siguiente');
+        next.textContent = '›';
+        [previous, next].forEach((button) => { button.style.cssText = 'position:absolute;top:50%;z-index:1;width:2.6rem;height:2.6rem;transform:translateY(-50%);border:0;border-radius:9999px;background:rgba(255,253,245,.82);color:#565936;font-size:2rem;line-height:1;box-shadow:0 8px 24px rgba(0,0,0,.22);cursor:pointer;'; });
+        previous.style.left = '-1rem';
+        next.style.right = '-1rem';
+        hint.textContent = 'Desliza para ver más · toca fuera para cerrar';
+        hint.style.cssText = 'position:fixed;bottom:1.4rem;left:1rem;right:1rem;margin:0;text-align:center;color:rgba(255,253,245,.84);font:600 .62rem/1.4 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;pointer-events:none;';
+        previous.addEventListener('click', () => movePhoto(-1));
+        next.addEventListener('click', () => movePhoto(1));
         overlay.addEventListener('click', closeLightbox);
         dialog.addEventListener('click', (event) => event.stopPropagation());
-        dialog.append(image, close);
-        overlay.append(dialog);
+        image.addEventListener('touchstart', handleTouchStart, { passive: true });
+        image.addEventListener('touchend', handleTouchEnd, { passive: true });
+        dialog.append(image, previous, next);
+        overlay.append(dialog, hint);
         document.body.append(overlay);
         document.addEventListener('keydown', handleKeyDown);
-        close.focus();
+        dialog.focus();
         return () => {
             document.body.style.overflow = previousOverflow;
             document.removeEventListener('keydown', handleKeyDown);
-            close.removeEventListener('click', closeLightbox);
+            image.removeEventListener('touchstart', handleTouchStart);
+            image.removeEventListener('touchend', handleTouchEnd);
             overlay.remove();
         };
     }, [selectedStoryPhoto]);
