@@ -7,12 +7,13 @@ import { useSearchParams } from 'next/navigation';
 
 const PHOTOS = {
     cover: 'https://res.cloudinary.com/dclzsvu62/image/upload/v1789881812/WhatsApp_Image_2026-09-17_at_9.22.35_PM_zhbtoo.jpg',
-    storyFour: 'https://res.cloudinary.com/dclzsvu62/image/upload/v1790139102/WhatsApp_Image_2026-09-20_at_9.20.10_PM_1_dodtzz.jpg',
-    storyFive: 'https://res.cloudinary.com/dclzsvu62/image/upload/v1790139105/WhatsApp_Image_2026-09-20_at_9.20.10_PM_e34wpi.jpg',
+    storyFour: 'https://res.cloudinary.com/dclzsvu62/image/upload/v1790139105/WhatsApp_Image_2026-09-20_at_9.20.10_PM_e34wpi.jpg',
+    storyFive: 'https://res.cloudinary.com/dclzsvu62/image/upload/v1790139102/WhatsApp_Image_2026-09-20_at_9.20.10_PM_1_dodtzz.jpg',
     storyOne: 'https://res.cloudinary.com/dclzsvu62/image/upload/v1789881800/WhatsApp_Image_2026-09-17_at_9.56.35_PM_eobhhl.jpg',
     storyTwo: 'https://res.cloudinary.com/dclzsvu62/image/upload/v1789881811/WhatsApp_Image_2026-09-17_at_9.22.57_PM_cxzpau.jpg',
     storyThree: 'https://res.cloudinary.com/dclzsvu62/image/upload/v1789881804/WhatsApp_Image_2026-09-17_at_9.25.34_PM_fpgk6h.jpg'
 };
+const STORY_PHOTO_URLS = new Set([PHOTOS.storyOne, PHOTOS.storyTwo, PHOTOS.storyThree, PHOTOS.storyFour, PHOTOS.storyFive]);
 
 const MASS_MAP = 'https://www.google.com/maps/place/San+Miguel+Febres+Cordero/@14.5512514,-90.5502701,17z/data=!3m1!4b1!4m6!3m5!1s0x8589a6c5c67f66f7:0xf9b22b652ce365b3!8m2!3d14.5512514!4d-90.5502701!16s%2Fg%2F1wfvmzxb?entry=ttu&g_ep=EgoyMDI2MDkxNi4wIKXMDSoASAFQAw%3D%3D';
 const RECEPTION_MAP = 'https://www.google.com/maps/place/Sal%C3%B3n+San+Jos%C3%A9+La+Quinta/@14.6415284,-90.5028569,17z/data=!4m6!3m5!1s0x8589a3004a2a3cc1:0x3a806c05f96f093!8m2!3d14.6422512!4d-90.5043804!16s%2Fg%2F11ypb1l2kz?entry=ttu&g_ep=EgoyMDI2MDkxNi4wIKXMDSoASAFQAw%3D%3D';
@@ -140,7 +141,9 @@ export function InvitacionDeLeonCortez() {
     const searchParams = useSearchParams();
     const [rsvpOpen, setRsvpOpen] = useState(false);
     const [musicMuted, setMusicMuted] = useState(false);
+    const [selectedStoryPhoto, setSelectedStoryPhoto] = useState(null);
     const musicRef = useRef(null);
+    const musicWasMutedByGuest = useRef(false);
     const reservation = useMemo(() => {
         const adults = getCount(searchParams, ['adultos', 'adultosInvitados'], 1);
         const kids = getCount(searchParams, ['ninos', 'niños'], 0);
@@ -149,38 +152,105 @@ export function InvitacionDeLeonCortez() {
     }, [searchParams]);
     const playMusic = () => {
         const music = musicRef.current;
-        if (!music || musicMuted) return;
+        if (!music || musicWasMutedByGuest.current) return;
         music.muted = false;
         music.volume = 0.42;
-        music.play().catch(() => { });
+        music.play().then(() => setMusicMuted(false)).catch(() => { });
     };
 
     useEffect(() => {
         const music = musicRef.current;
         if (!music) return undefined;
-        const syncMutedState = () => setMusicMuted(music.paused || music.muted);
+        const syncMutedState = () => {
+            if (!music.paused && !music.muted) {
+                setMusicMuted(false);
+            } else if (musicWasMutedByGuest.current) {
+                setMusicMuted(true);
+            }
+        };
+        const unlockOnFirstInteraction = (event) => {
+            if (event.target instanceof Element && event.target.closest('button, a, input, label')) return;
+            playMusic();
+        };
         music.volume = 0.42;
         music.addEventListener('play', syncMutedState);
         music.addEventListener('pause', syncMutedState);
         music.addEventListener('volumechange', syncMutedState);
+        document.addEventListener('click', unlockOnFirstInteraction);
         playMusic();
         return () => {
             music.removeEventListener('play', syncMutedState);
             music.removeEventListener('pause', syncMutedState);
             music.removeEventListener('volumechange', syncMutedState);
+            document.removeEventListener('click', unlockOnFirstInteraction);
             music.pause();
         };
     }, []);
+
+    useEffect(() => {
+        const openStoryPhoto = (event) => {
+            const image = event.target;
+            if (!(image instanceof HTMLImageElement)) return;
+            const source = image.currentSrc || image.src;
+            if (!STORY_PHOTO_URLS.has(source)) return;
+            setSelectedStoryPhoto({ source, alt: image.alt || 'Foto de Ariana y Mario' });
+        };
+        const storyImages = Array.from(document.images).filter((image) => STORY_PHOTO_URLS.has(image.currentSrc || image.src));
+        storyImages.forEach((image) => { image.style.cursor = 'zoom-in'; });
+        document.addEventListener('click', openStoryPhoto);
+        return () => document.removeEventListener('click', openStoryPhoto);
+    }, []);
+
+    useEffect(() => {
+        if (!selectedStoryPhoto) return undefined;
+        const previousOverflow = document.body.style.overflow;
+        const overlay = document.createElement('div');
+        const dialog = document.createElement('div');
+        const image = document.createElement('img');
+        const close = document.createElement('button');
+        const closeLightbox = () => setSelectedStoryPhoto(null);
+        const handleKeyDown = (event) => { if (event.key === 'Escape') closeLightbox(); };
+        document.body.style.overflow = 'hidden';
+        overlay.setAttribute('role', 'presentation');
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:1.5rem;background:rgba(20,23,12,.82);backdrop-filter:blur(5px);';
+        dialog.setAttribute('role', 'dialog');
+        dialog.setAttribute('aria-modal', 'true');
+        dialog.setAttribute('aria-label', selectedStoryPhoto.alt);
+        dialog.style.cssText = 'position:relative;max-height:90svh;max-width:min(92vw,680px);';
+        image.src = selectedStoryPhoto.source;
+        image.alt = selectedStoryPhoto.alt;
+        image.style.cssText = 'display:block;max-height:90svh;max-width:100%;border-radius:1rem;object-fit:contain;box-shadow:0 25px 70px rgba(0,0,0,.55);';
+        close.type = 'button';
+        close.setAttribute('aria-label', 'Cerrar foto ampliada');
+        close.textContent = '×';
+        close.style.cssText = 'position:absolute;right:-.65rem;top:-.65rem;width:2.35rem;height:2.35rem;border:0;border-radius:9999px;background:#fffdf5;color:#565936;font-size:1.7rem;line-height:1;box-shadow:0 8px 24px rgba(0,0,0,.3);cursor:pointer;';
+        close.addEventListener('click', closeLightbox);
+        overlay.addEventListener('click', closeLightbox);
+        dialog.addEventListener('click', (event) => event.stopPropagation());
+        dialog.append(image, close);
+        overlay.append(dialog);
+        document.body.append(overlay);
+        document.addEventListener('keydown', handleKeyDown);
+        close.focus();
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            document.removeEventListener('keydown', handleKeyDown);
+            close.removeEventListener('click', closeLightbox);
+            overlay.remove();
+        };
+    }, [selectedStoryPhoto]);
 
     const toggleMusic = () => {
         const music = musicRef.current;
         if (!music) return;
         if (!music.paused && !music.muted) {
+            musicWasMutedByGuest.current = true;
             music.muted = true;
             music.pause();
             setMusicMuted(true);
             return;
         }
+        musicWasMutedByGuest.current = false;
         music.muted = false;
         music.volume = 0.42;
         music.play().then(() => setMusicMuted(false)).catch(() => setMusicMuted(true));
@@ -195,7 +265,7 @@ export function InvitacionDeLeonCortez() {
 
     <section className="relative min-h-[720px] overflow-hidden px-7 py-24" style={{ backgroundImage: `linear-gradient(rgba(255, 253, 245, .70), rgba(255, 253, 245, .86)), url(${FLORAL_BACKGROUND})`, backgroundSize: 'cover', backgroundPosition: 'center' }}><SectionTitle eyebrow="Cuenta regresiva">Falta muy poco</SectionTitle><div className="mt-12"><Countdown /></div><p className="mx-auto mt-20 max-w-[305px] text-center font-serif text-xl italic leading-relaxed text-[#6E723A]">“Grábame como un sello en tu corazón, como un sello en tu brazo. Porque el amor es fuerte como la muerte… Las aguas torrenciales no podrán apagar el amor, ni los ríos anegarlo.”</p><p className="mt-5 text-center text-[.53rem] font-bold uppercase tracking-[.16em] text-[#6E7349]">Cantar de los Cantares 8:6–7</p></section>
 
-    <section className="relative min-h-[880px] overflow-hidden bg-[#6E723A] px-7 py-24 text-[#fffdf5]" style={{ backgroundImage: `linear-gradient(rgba(86, 89, 39, .58), rgba(86, 89, 39, .72)), url(${FLORAL_BACKGROUND})`, backgroundSize: 'cover', backgroundPosition: 'center' }}><SectionTitle eyebrow="Con la bendición de sus familias" dark>Celebramos el amor</SectionTitle><div className="mt-20 space-y-16 text-center"><div><p className="text-[.53rem] font-bold uppercase tracking-[.22em] text-[#D9BF73]">Padres de Ariana</p><p className="mt-5 font-serif text-xl italic leading-relaxed">Efraín Cortez Cotom<br />Delia Chanchavac de Cortez <span className="ml-1 font-sans font-bold text-[#D9BF73]">†</span></p></div><div><p className="text-[.53rem] font-bold uppercase tracking-[.22em] text-[#D9BF73]">Padres de Mario</p><p className="mt-5 font-serif text-xl italic leading-relaxed">Hugo Roberto de León Campillo<br />Aura Marina Alvarez de de León <span className="ml-1 font-sans font-bold text-[#D9BF73]">†</span></p></div><div className="border-t border-[#D9BF73]/50 pt-14"><p className="text-[.53rem] font-bold uppercase tracking-[.22em] text-[#D9BF73]">Padrinos de velación</p><p className="mt-5 font-serif text-xl italic leading-relaxed">Julio Cortez<br />Adriana Carrera</p><p className="mt-10 text-[.53rem] font-bold uppercase tracking-[.22em] text-[#D9BF73]">Padrinos de arras</p><p className="mt-5 font-serif text-xl italic leading-relaxed">Edwin Linares Leal<br />Virginia Gramajo</p><p className="mt-10 text-[.53rem] font-bold uppercase tracking-[.22em] text-[#D9BF73]">Dama de honor</p><p className="mx-auto mt-4 max-w-[18rem] text-[.96rem] font-semibold leading-relaxed text-[#fffdf5]/95">Nuestra hija Sofía de León Cortez, quien nos acompañará como Dama de Honor, custodiará nuestros anillos y las alianzas de nuestra eterna unión.</p></div></div></section>
+    <section className="relative min-h-[880px] overflow-hidden bg-[#6E723A] px-7 py-24 text-[#fffdf5]" style={{ backgroundImage: `linear-gradient(rgba(86, 89, 39, .58), rgba(86, 89, 39, .72)), url(${FLORAL_BACKGROUND})`, backgroundSize: 'cover', backgroundPosition: 'center' }}><SectionTitle eyebrow="Con la bendición de sus familias" dark>Celebramos el amor</SectionTitle><div className="mt-20 space-y-16 text-center"><div><p className="text-[.53rem] font-bold uppercase tracking-[.22em] text-[#D9BF73]">Padres de Ariana</p><p className="mt-5 font-serif text-xl italic leading-relaxed">Efraín Cortez Cotom<br />Delia Chanchavac de Cortez <span className="ml-1 font-sans font-bold text-[#D9BF73]">†</span></p></div><div><p className="text-[.53rem] font-bold uppercase tracking-[.22em] text-[#D9BF73]">Padres de Mario</p><p className="mt-5 font-serif text-xl italic leading-relaxed">Hugo Roberto de León Campollo<br />Aura Marina Alvarez de de León <span className="ml-1 font-sans font-bold text-[#D9BF73]">†</span></p></div><div className="border-t border-[#D9BF73]/50 pt-14"><p className="text-[.53rem] font-bold uppercase tracking-[.22em] text-[#D9BF73]">Padrinos de velación</p><p className="mt-5 font-serif text-xl italic leading-relaxed">Julio Cortez<br />Adriana Carrera</p><p className="mt-10 text-[.53rem] font-bold uppercase tracking-[.22em] text-[#D9BF73]">Padrinos de arras</p><p className="mt-5 font-serif text-xl italic leading-relaxed">Edwin Linares Leal<br />Virginia Gramajo</p><p className="mt-10 text-[.53rem] font-bold uppercase tracking-[.22em] text-[#D9BF73]">Dama de honor</p><p className="mx-auto mt-4 max-w-[18rem] text-[.96rem] font-semibold leading-relaxed text-[#fffdf5]/95">Nuestra hija Sofía de León Cortez, quien nos acompañará como Dama de Honor, custodiará nuestros anillos y las alianzas de nuestra eterna unión.</p></div></div></section>
 
     <section className="relative min-h-[790px] overflow-hidden px-7 py-24"><SectionTitle eyebrow="17 de octubre">Nuestro día</SectionTitle><div className="mt-16 divide-y divide-[#D9BF73]/75"><EventCard icon={Church} title="Misa" time="3:00 p. m." map={MASS_MAP}>Iglesia San Miguel Febres Cordero<br />Zona 21, Guatemala</EventCard><EventCard icon={Sparkles} title="Reunión" time="6:00 p. m." map={RECEPTION_MAP}>San José La Quinta, salón de eventos<br />5ta Calle 14-21, zona 1</EventCard></div></section>
 
@@ -205,5 +275,5 @@ export function InvitacionDeLeonCortez() {
 
     <section className="relative min-h-[700px] overflow-hidden px-7 py-24" style={{ backgroundImage: `linear-gradient(rgba(255, 253, 245, .56), rgba(255, 253, 245, .76)), url(${FLORAL_BACKGROUND})`, backgroundSize: 'cover', backgroundPosition: 'center' }}><SectionTitle eyebrow="Tu presencia">Nos haría muy felices</SectionTitle><div className="mt-20 text-center"><UsersRound className="mx-auto h-7 w-7 text-[#D9B23D]" /><p className="mt-5 font-serif text-2xl italic text-[#6E723A]">{reservation.seats} {reservation.seats === 1 ? 'lugar reservado' : 'lugares reservados'}</p><p className="mx-auto mt-6 max-w-[17rem] text-[.84rem] leading-relaxed">Para {reservation.guestName}. Elige si asistirás a la misa, a la fiesta, a ambas o si no podrás acompañarnos.</p><button type="button" onClick={() => setRsvpOpen(true)} className="mt-10 rounded-full bg-[#6E723A] px-6 py-3.5 text-[.58rem] font-bold uppercase tracking-[.14em] text-[#fffdf5] transition hover:bg-[#565936]">Confirmar asistencia</button></div></section>
 
-    <section className="relative overflow-hidden bg-[#6E723A] px-7 py-24 text-[#fffdf5]" style={{ backgroundImage: `linear-gradient(rgba(86, 89, 39, .58), rgba(86, 89, 39, .70)), url(${FLORAL_BACKGROUND})`, backgroundSize: 'cover', backgroundPosition: 'center' }}><SectionTitle eyebrow="Memorias & retratos" dark>Nuestra historia</SectionTitle><div className="mt-14 grid grid-cols-2 gap-3"><img src={PHOTOS.storyFour} alt="Ariana y Mario" className="h-60 w-full rounded-[1.3rem] object-cover shadow-md" /><img src={PHOTOS.storyFive} alt="Ariana y Mario" className="h-60 w-full rounded-[1.3rem] object-cover shadow-md" /><img src={PHOTOS.storyOne} alt="Ariana y Mario" className="col-span-2 h-72 w-full rounded-[1.5rem] object-cover object-[center_35%] shadow-md" /><img src={PHOTOS.storyTwo} alt="Ariana y Mario" className="h-60 w-full rounded-[1.3rem] object-cover shadow-md" /><img src={PHOTOS.storyThree} alt="Ariana y Mario" className="h-60 w-full rounded-[1.3rem] object-cover shadow-md" /></div><div className="mt-24 border-t border-[#D9BF73]/50 pt-20"><article className="text-center"><ScrollText className="mx-auto h-6 w-6 text-[#D9BF73]" /><p className="mx-auto mt-5 max-w-[20rem] text-[.96rem] leading-[1.8] text-[#fffdf5]/95">Diecisiete años de risas, aprendizajes y pruebas superadas nos han traído hasta aquí. Hoy no solo celebramos el tiempo transcurrido, sino la decisión diaria de amarnos y cuidar de la hermosa familia que formamos junto a nuestra hija. Con el corazón lleno de gratitud y una fe renovada, hemos decidido recibir el sacramento del matrimonio en la Iglesia Católica. Su presencia será el mejor regalo para celebrar este nuevo capítulo de nuestra historia de amor.</p><div className="mx-auto mt-12 h-px w-14 bg-[#D9BF73]/60" /><blockquote className="mx-auto mt-8 max-w-[20rem] font-serif text-xl italic leading-relaxed">“Doy gracias a mi Dios cada vez que los recuerdo... Estoy convencido de esto: el que comenzó en ustedes la buena obra, la llevará a feliz término hasta el Día de Cristo Jesús.”<footer className="mt-5 text-center font-sans text-[.53rem] font-bold uppercase tracking-[.16em] text-[#D9BF73]">Filipenses 1:3–6</footer></blockquote></article><p className="mt-20 text-center text-[.52rem] font-bold uppercase tracking-[.2em] text-[#D9BF73]">Ariana Cortez & Mario de León</p></div></section><footer className="bg-[#fffdf5] px-6 py-7 text-center text-[#6E723A]"><p className="text-[.52rem] font-bold uppercase tracking-[.24em]">Design by woowbegt.com</p><div className="mt-4 flex items-center justify-center gap-4"><a href="https://www.facebook.com/WoowBeGT/" target="_blank" rel="noreferrer" aria-label="Facebook de Woowbe" className="transition hover:-translate-y-0.5 hover:text-[#565936] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6E723A]"><BrandFacebook size={20} strokeWidth={1.5} /></a><a href="https://www.instagram.com/woowbe?stkn=MTU3d2ZoNHJzYzNuZg%3D%3D&utm_source=qr" target="_blank" rel="noreferrer" aria-label="Instagram de Woowbe" className="transition hover:-translate-y-0.5 hover:text-[#565936] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6E723A]"><BrandInstagram size={20} strokeWidth={1.5} /></a><a href="https://www.tiktok.com/@woowbegt?_r=1&_t=ZS-99gwzQMoXW0" target="_blank" rel="noreferrer" aria-label="TikTok de Woowbe" className="transition hover:-translate-y-0.5 hover:text-[#565936] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6E723A]"><BrandTiktok size={20} strokeWidth={1.5} /></a></div></footer></div>{rsvpOpen && <RsvpModal close={() => setRsvpOpen(false)} guestName={reservation.guestName} reservedSeats={reservation.seats} />}</main>;
+    <section className="relative overflow-hidden bg-[#6E723A] px-7 py-24 text-[#fffdf5]" style={{ backgroundImage: `linear-gradient(rgba(86, 89, 39, .58), rgba(86, 89, 39, .70)), url(${FLORAL_BACKGROUND})`, backgroundSize: 'cover', backgroundPosition: 'center' }}><SectionTitle eyebrow="Memorias & retratos" dark>Nuestra historia</SectionTitle><div className="mt-14 grid grid-cols-2 gap-3"><img src={PHOTOS.storyFour} alt="Ariana y Mario" className="h-60 w-full rounded-[1.3rem] object-cover shadow-md" /><img src={PHOTOS.storyFive} alt="Ariana y Mario" className="h-60 w-full rounded-[1.3rem] object-cover shadow-md" /><img src={PHOTOS.storyOne} alt="Ariana y Mario" className="col-span-2 h-72 w-full rounded-[1.5rem] object-cover object-[center_35%] shadow-md" /><img src={PHOTOS.storyTwo} alt="Ariana y Mario" className="h-60 w-full rounded-[1.3rem] object-cover shadow-md" /><img src={PHOTOS.storyThree} alt="Ariana y Mario" className="h-60 w-full rounded-[1.3rem] object-cover shadow-md" /></div><div className="mt-24 border-t border-[#D9BF73]/50 pt-20"><article className="text-center"><ScrollText className="mx-auto h-6 w-6 text-[#D9BF73]" /><p className="mx-auto mt-5 max-w-[20rem] text-[.96rem] leading-[1.8] text-[#fffdf5]/95">Hace 17 años iniciamos un camino juntos ante la ley civil y nuestra fe evangélica. A lo largo de este tiempo, la vida nos ha puesto a prueba, pero cada día nos hemos vuelto a elegir con más fuerza. Hoy, con la madurez que dan los años, el fruto bendito de nuestra hija de 13 años que nos acompaña, y el deseo profundo de unir nuestras vidas bajo el sacramento de la Iglesia Católica, los invitamos a ser testigos de cómo Dios perfecciona nuestra unión. Acompáñennos a recibir su bendición y a celebrar que el verdadero amor todo lo espera y todo lo soporta.</p><div className="mx-auto mt-12 h-px w-14 bg-[#D9BF73]/60" /><blockquote className="mx-auto mt-8 max-w-[20rem] font-serif text-xl italic leading-relaxed">“Doy gracias a mi Dios cada vez que los recuerdo... Estoy convencido de esto: el que comenzó en ustedes la buena obra, la llevará a feliz término hasta el Día de Cristo Jesús.”<footer className="mt-5 text-center font-sans text-[.53rem] font-bold uppercase tracking-[.16em] text-[#D9BF73]">Filipenses 1:3–6</footer></blockquote></article><p className="mt-20 text-center text-[.52rem] font-bold uppercase tracking-[.2em] text-[#D9BF73]">Ariana Cortez & Mario de León</p></div></section><footer className="bg-[#fffdf5] px-6 py-7 text-center text-[#6E723A]"><p className="text-[.52rem] font-bold uppercase tracking-[.24em]">Design by woowbegt.com</p><div className="mt-4 flex items-center justify-center gap-4"><a href="https://www.facebook.com/WoowBeGT/" target="_blank" rel="noreferrer" aria-label="Facebook de Woowbe" className="transition hover:-translate-y-0.5 hover:text-[#565936] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6E723A]"><BrandFacebook size={20} strokeWidth={1.5} /></a><a href="https://www.instagram.com/woowbe?stkn=MTU3d2ZoNHJzYzNuZg%3D%3D&utm_source=qr" target="_blank" rel="noreferrer" aria-label="Instagram de Woowbe" className="transition hover:-translate-y-0.5 hover:text-[#565936] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6E723A]"><BrandInstagram size={20} strokeWidth={1.5} /></a><a href="https://www.tiktok.com/@woowbegt?_r=1&_t=ZS-99gwzQMoXW0" target="_blank" rel="noreferrer" aria-label="TikTok de Woowbe" className="transition hover:-translate-y-0.5 hover:text-[#565936] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6E723A]"><BrandTiktok size={20} strokeWidth={1.5} /></a></div></footer></div>{rsvpOpen && <RsvpModal close={() => setRsvpOpen(false)} guestName={reservation.guestName} reservedSeats={reservation.seats} />}</main>;
 }
