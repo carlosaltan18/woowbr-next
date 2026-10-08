@@ -18,7 +18,7 @@ import {
 
 // Mantener el acceso al API en una variable pública permite que cada entorno use
 // su propio woowbe-back, sin exponer credenciales de R2 en la invitación.
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api').replace(/\/$/, '');
+const API_BASE_URL = (process.env.API_URL || 'http://localhost:3000/api').replace(/\/$/, '');
 
 const FALLBACK_ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime'];
 

@@ -18,7 +18,7 @@ import {
     X,
 } from 'lucide-react';
 
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api').replace(/\/$/, '');
+const API_BASE_URL = (process.env.API_URL || 'http://localhost:3000/api').replace(/\/$/, '');
 const PAGE_SIZE = 24;
 
 const FILTERS = [
