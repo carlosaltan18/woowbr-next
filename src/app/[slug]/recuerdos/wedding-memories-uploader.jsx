@@ -18,7 +18,7 @@ import {
 
 // Mantener el acceso al API en una variable pública permite que cada entorno use
 // su propio woowbe-back, sin exponer credenciales de R2 en la invitación.
-const API_BASE_URL = (process.env.API_URL || 'http://localhost:3000/api').replace(/\/$/, '');
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
 
 const FALLBACK_ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime'];
 
@@ -49,6 +49,9 @@ const createSessionId = () => {
 };
 
 async function requestJson(path, options = {}) {
+    if (!API_BASE_URL) {
+        throw new Error('El servicio de recuerdos no está configurado.');
+    }
     const response = await fetch(`${API_BASE_URL}${path}`, {
         ...options,
         headers: {
