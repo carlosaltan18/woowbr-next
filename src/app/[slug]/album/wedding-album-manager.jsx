@@ -18,7 +18,7 @@ import {
     X,
 } from 'lucide-react';
 
-const API_BASE_URL = (process.env.API_URL || 'http://localhost:3000/api').replace(/\/$/, '');
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
 const PAGE_SIZE = 24;
 
 const FILTERS = [
@@ -66,6 +66,9 @@ const getMessage = (error, fallback) => {
 };
 
 async function requestJson(path, manageToken, options = {}) {
+    if (!API_BASE_URL) {
+        throw new Error('El servicio del álbum no está configurado.');
+    }
     const response = await fetch(`${API_BASE_URL}${path}`, {
         ...options,
         cache: 'no-store',
