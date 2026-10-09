@@ -224,6 +224,7 @@ export default function WeddingAlbumManager() {
     const [hasMore, setHasMore] = useState(false);
     const [activeMedia, setActiveMedia] = useState(null);
     const [downloadingId, setDownloadingId] = useState(null);
+    const [reviewingId, setReviewingId] = useState(null);
     const [exportState, setExportState] = useState(null);
 
     const storageKey = useMemo(() => (slug ? `woowbe:wedding-manage:${slug}` : null), [slug]);
@@ -362,6 +363,36 @@ export default function WeddingAlbumManager() {
         }
     };
 
+    const reviewMedia = async (item, decision) => {
+        const mediaId = getMediaId(item);
+        if (!mediaId || !slug || !manageToken) return;
+
+        const action = decision === 'approve' ? 'approve' : 'reject';
+        const nextStatus = action === 'approve' ? 'approved' : 'rejected';
+        setReviewingId(`${mediaId}:${action}`);
+        setMediaError('');
+        try {
+            await requestJson(
+                `/public/weddings/${encodeURIComponent(slug)}/manage/media/${encodeURIComponent(mediaId)}/${action}`,
+                manageToken,
+                { method: 'PATCH' },
+            );
+            // Actualización inmediata para que el estado se sienta ágil, seguida
+            // por una consulta nueva para sincronizar contadores y filtros.
+            setMedia((current) => current.map((entry) => (
+                getMediaId(entry) === mediaId ? { ...entry, status: nextStatus } : entry
+            )));
+            void loadConfig();
+            void loadMedia({ targetPage: 1 });
+        } catch (error) {
+            setMediaError(getMessage(error, action === 'approve'
+                ? 'No pudimos aprobar este recuerdo. Intenta de nuevo.'
+                : 'No pudimos ocultar este recuerdo. Intenta de nuevo.'));
+        } finally {
+            setReviewingId(null);
+        }
+    };
+
     const downloadExport = () => {
         const url = exportState?.url || exportState?.downloadUrl;
         if (url) window.open(url, '_blank', 'noopener,noreferrer');
@@ -466,6 +497,18 @@ export default function WeddingAlbumManager() {
                                                 <span className={`shrink-0 rounded-full px-2.5 py-1 text-[0.62rem] font-bold uppercase tracking-[0.09em] ${status.className}`}>{status.label}</span>
                                             </div>
                                             <p className="mt-3 text-xs text-[#718787]">{formatDate(item.uploadedAt || item.createdAt)}{item.uploaderName ? ` · ${item.uploaderName}` : ''}</p>
+                                            {String(item.status || 'pending').toLowerCase() === 'pending' ? (
+                                                <div className="mt-4 grid grid-cols-2 gap-2" aria-label={`Revisar ${item.filename || 'recuerdo'}`}>
+                                                    <button type="button" onClick={() => void reviewMedia(item, 'approve')} disabled={!mediaId || Boolean(reviewingId)} className="flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-[#416b55] px-2 text-xs font-bold uppercase tracking-[0.09em] text-white transition hover:bg-[#315d46] disabled:cursor-not-allowed disabled:opacity-60">
+                                                        {reviewingId === `${mediaId}:approve` ? <LoaderCircle size={15} className="animate-spin" aria-hidden="true" /> : <Check size={15} aria-hidden="true" />}
+                                                        Aprobar
+                                                    </button>
+                                                    <button type="button" onClick={() => void reviewMedia(item, 'reject')} disabled={!mediaId || Boolean(reviewingId)} className="flex min-h-10 items-center justify-center gap-1.5 rounded-xl border border-[#dfc8bd] px-2 text-xs font-bold uppercase tracking-[0.09em] text-[#9a4a3c] transition hover:bg-[#fbefeb] disabled:cursor-not-allowed disabled:opacity-60">
+                                                        {reviewingId === `${mediaId}:reject` ? <LoaderCircle size={15} className="animate-spin" aria-hidden="true" /> : <X size={15} aria-hidden="true" />}
+                                                        No publicar
+                                                    </button>
+                                                </div>
+                                            ) : null}
                                             <button type="button" onClick={() => void downloadMedia(item)} disabled={!mediaId || downloadingId === mediaId} className="mt-4 flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#c9d8cc] text-xs font-bold uppercase tracking-[0.11em] text-[#416869] transition hover:bg-[#eef4ec] disabled:cursor-not-allowed disabled:opacity-60">
                                                 {downloadingId === mediaId ? <LoaderCircle size={16} className="animate-spin" aria-hidden="true" /> : <Download size={16} aria-hidden="true" />}
                                                 Descargar
