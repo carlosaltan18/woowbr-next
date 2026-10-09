@@ -21,6 +21,12 @@ import {
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
 
 const FALLBACK_ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime'];
+// Los videos grandes se envían por partes: evita reiniciar todo el archivo por
+// una caída de red breve y permite aprovechar mejor las conexiones modernas.
+// Cada parte supera el mínimo requerido por S3/R2, salvo la última.
+const MULTIPART_THRESHOLD_BYTES = 25 * 1024 * 1024;
+const MULTIPART_PART_SIZE_BYTES = 10 * 1024 * 1024;
+const MAX_PARALLEL_PART_UPLOADS = 2;
 
 const formatBytes = (bytes) => {
     if (!Number.isFinite(bytes) || bytes <= 0) return '—';
@@ -84,6 +90,69 @@ async function uploadToSignedUrl({ uploadUrl, file }) {
         throw new Error('No pudimos guardar este archivo. Revisa tu conexión e inténtalo de nuevo.');
     }
 }
+
+async function uploadMultipartToSignedUrls({ partUrls, file, onProgress }) {
+    if (!Array.isArray(partUrls) || !partUrls.length) {
+        throw new Error('No recibimos las autorizaciones necesarias para subir este video.');
+    }
+
+    const orderedParts = [...partUrls].sort((first, second) => first.partNumber - second.partNumber);
+    const expectedParts = Math.ceil(file.size / MULTIPART_PART_SIZE_BYTES);
+    if (orderedParts.length !== expectedParts) {
+        throw new Error('La preparación de la carga está incompleta. Intenta de nuevo.');
+    }
+
+    let nextPartIndex = 0;
+    let uploadedBytes = 0;
+    let firstError = null;
+    const uploadedParts = [];
+
+    const uploadPart = async () => {
+        while (!firstError) {
+            const currentIndex = nextPartIndex;
+            nextPartIndex += 1;
+            if (currentIndex >= orderedParts.length) return;
+
+            const part = orderedParts[currentIndex];
+            const from = currentIndex * MULTIPART_PART_SIZE_BYTES;
+            const body = file.slice(from, Math.min(from + MULTIPART_PART_SIZE_BYTES, file.size));
+
+            try {
+                // Las URLs firmadas para partes ya incluyen su autorización. No se
+                // agregan credenciales ni encabezados extra al PUT directo a R2.
+                const response = await fetch(part.url, { method: 'PUT', body });
+                if (!response.ok) {
+                    throw new Error('La conexión se interrumpió mientras se subía el archivo.');
+                }
+
+                const etag = response.headers.get('ETag');
+                if (!etag) {
+                    throw new Error('R2 no confirmó una parte del archivo. Intenta de nuevo.');
+                }
+
+                uploadedParts.push({ partNumber: part.partNumber, etag });
+                uploadedBytes += body.size;
+                onProgress?.(uploadedBytes, file.size);
+            } catch (error) {
+                firstError = error;
+            }
+        }
+    };
+
+    const workerCount = Math.min(MAX_PARALLEL_PART_UPLOADS, orderedParts.length);
+    await Promise.all(Array.from({ length: workerCount }, () => uploadPart()));
+    if (firstError) throw firstError;
+
+    return uploadedParts.sort((first, second) => first.partNumber - second.partNumber);
+}
+
+const getFileUploadConcurrency = () => {
+    if (typeof navigator === 'undefined') return 1;
+    const connectionType = navigator.connection?.effectiveType;
+    // En una red lenta se preserva la estabilidad; en Wi‑Fi/4G se pueden
+    // enviar dos recuerdos independientes sin hacer cola innecesariamente.
+    return ['slow-2g', '2g', '3g'].includes(connectionType) ? 1 : 2;
+};
 
 function StatusPanel({ title, message, action }) {
     return (
@@ -167,10 +236,12 @@ function Gallery({ items, onOpen }) {
                         className="group relative aspect-square overflow-hidden rounded-2xl bg-[#dce5dc] text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-[#416869] focus:ring-offset-2"
                         aria-label={`Abrir ${isVideo ? 'video' : 'foto'}: ${item.filename || 'recuerdo de boda'}`}
                     >
-                        {isVideo && !item.thumbnailUrl ? (
-                            <video src={item.url} preload="metadata" muted playsInline className="h-full w-full object-cover" />
+                        {isVideo ? (
+                            item.thumbnailUrl
+                                ? <img src={item.thumbnailUrl} alt="" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" decoding="async" />
+                                : <span className="flex h-full w-full items-center justify-center bg-[#315b5c] text-white/85"><FileVideo size={34} aria-hidden="true" /></span>
                         ) : (
-                            <img src={imageSource} alt="" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" />
+                            <img src={imageSource} alt="" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" decoding="async" />
                         )}
                         {isVideo ? (
                             <span className="absolute inset-0 flex items-center justify-center bg-[#173f40]/25 text-white">
@@ -209,9 +280,9 @@ function MediaLightbox({ item, onClose }) {
             </button>
             <div className="max-h-full max-w-full overflow-hidden rounded-2xl bg-black shadow-2xl">
                 {isVideo ? (
-                    <video src={item.url} controls autoPlay playsInline className="max-h-[82vh] max-w-[92vw]" />
+                    <video src={item.url} controls preload="metadata" playsInline className="max-h-[82vh] max-w-[92vw]" />
                 ) : (
-                    <img src={item.url} alt={item.filename || 'Recuerdo de boda'} className="max-h-[82vh] max-w-[92vw] object-contain" />
+                    <img src={item.url} alt={item.filename || 'Recuerdo de boda'} className="max-h-[82vh] max-w-[92vw] object-contain" decoding="async" />
                 )}
             </div>
         </div>
@@ -382,6 +453,8 @@ export default function WeddingMemoriesUploader() {
         updateFile(entry.id, { state: 'uploading', progress: 1, error: '' });
 
         try {
+            const useMultipart = entry.file.size >= MULTIPART_THRESHOLD_BYTES;
+            const multipartParts = useMultipart ? Math.ceil(entry.file.size / MULTIPART_PART_SIZE_BYTES) : undefined;
             const intent = await requestJson(`/public/weddings/${encodeURIComponent(slug)}/upload-intent`, {
                 method: 'POST',
                 body: JSON.stringify({
@@ -391,12 +464,33 @@ export default function WeddingMemoriesUploader() {
                     size: entry.file.size,
                     uploaderName: uploaderName.trim() || undefined,
                     sessionId: sessionIdRef.current,
+                    multipart: useMultipart,
+                    parts: multipartParts,
                 }),
             });
 
-            if (!intent?.uploadUrl || !intent?.key) throw new Error('No recibimos una autorización de carga válida.');
-            await uploadToSignedUrl({ uploadUrl: intent.uploadUrl, file: entry.file });
-            updateFile(entry.id, { progress: 90 });
+            if (!intent?.key) throw new Error('No recibimos una autorización de carga válida.');
+
+            let completedParts;
+            if (useMultipart) {
+                if (!intent?.multipart || !intent?.uploadId || !Array.isArray(intent?.partUrls)) {
+                    throw new Error('No recibimos una autorización de carga válida.');
+                }
+                completedParts = await uploadMultipartToSignedUrls({
+                    partUrls: intent.partUrls,
+                    file: entry.file,
+                    onProgress: (uploadedBytes, totalBytes) => {
+                        const uploadProgress = totalBytes ? Math.round((uploadedBytes / totalBytes) * 93) : 1;
+                        updateFile(entry.id, { progress: Math.max(1, Math.min(uploadProgress, 93)) });
+                    },
+                });
+            } else {
+                if (!intent?.uploadUrl) throw new Error('No recibimos una autorización de carga válida.');
+                // Este PUT conserva el contrato de R2: únicamente Content-Type,
+                // sin Authorization ni encabezados personalizados.
+                await uploadToSignedUrl({ uploadUrl: intent.uploadUrl, file: entry.file });
+            }
+            updateFile(entry.id, { progress: 96 });
 
             await requestJson(`/public/weddings/${encodeURIComponent(slug)}/upload-complete`, {
                 method: 'POST',
@@ -407,6 +501,8 @@ export default function WeddingMemoriesUploader() {
                     contentType: entry.file.type,
                     uploaderName: uploaderName.trim() || undefined,
                     sessionId: sessionIdRef.current,
+                    uploadId: intent.uploadId,
+                    parts: completedParts,
                 }),
             });
             updateFile(entry.id, { state: 'success', progress: 100, error: '' });
@@ -422,10 +518,16 @@ export default function WeddingMemoriesUploader() {
         setIsUploading(true);
         setNotice('');
         let uploaded = 0;
-        for (const entry of entries) {
-            // Subir uno a la vez cuida la batería y las conexiones móviles inestables.
-            if (await uploadEntry(entry)) uploaded += 1;
-        }
+        let nextFileIndex = 0;
+        const worker = async () => {
+            while (nextFileIndex < entries.length) {
+                const entry = entries[nextFileIndex];
+                nextFileIndex += 1;
+                if (await uploadEntry(entry)) uploaded += 1;
+            }
+        };
+        const workerCount = Math.min(getFileUploadConcurrency(), entries.length);
+        await Promise.all(Array.from({ length: workerCount }, () => worker()));
         setIsUploading(false);
         if (uploaded > 0) {
             setNotice(uploaded === entries.length
