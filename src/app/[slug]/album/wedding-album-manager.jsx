@@ -29,7 +29,8 @@ const FILTERS = [
 ];
 
 const formatBytes = (bytes) => {
-    if (!Number.isFinite(Number(bytes)) || Number(bytes) <= 0) return '—';
+    if (!Number.isFinite(Number(bytes))) return '—';
+    if (Number(bytes) <= 0) return '0 B';
     const units = ['B', 'KB', 'MB', 'GB'];
     const index = Math.min(Math.floor(Math.log(Number(bytes)) / Math.log(1024)), units.length - 1);
     return `${(Number(bytes) / (1024 ** index)).toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
@@ -121,6 +122,26 @@ function StatCard({ icon: Icon, value, label, tone = 'cream' }) {
     );
 }
 
+function StorageCard({ usedBytes, limitBytes }) {
+    const hasLimit = limitBytes > 0;
+    const percentage = hasLimit
+        ? Math.min(100, Math.round((usedBytes / limitBytes) * 100))
+        : 0;
+
+    return (
+        <article className="rounded-2xl border border-[#d8dfd5] bg-[#fcfcf9] p-4 text-[#305a5b] sm:p-5">
+            <FolderArchive size={19} aria-hidden="true" />
+            <p className="mt-5 text-xl font-semibold leading-none sm:text-2xl">
+                {formatBytes(usedBytes)} <span className="text-sm font-normal text-[#6c8383]">/ {hasLimit ? formatBytes(limitBytes) : 'sin límite'}</span>
+            </p>
+            {hasLimit ? <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#dde7dd]" role="progressbar" aria-label="Espacio usado del álbum" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percentage}>
+                <div className="h-full rounded-full bg-[#557f70] transition-[width]" style={{ width: `${percentage}%` }} />
+            </div> : null}
+            <p className="mt-2 text-[0.67rem] font-bold uppercase tracking-[0.16em]">Espacio usado</p>
+        </article>
+    );
+}
+
 function MediaLightbox({ media, onClose }) {
     useEffect(() => {
         const closeOnEscape = (event) => {
@@ -146,8 +167,8 @@ function MediaLightbox({ media, onClose }) {
             </button>
             <div className="max-h-full max-w-full overflow-hidden rounded-2xl bg-black shadow-2xl">
                 {isVideo
-                    ? <video src={media.url} controls autoPlay playsInline className="max-h-[82vh] max-w-[92vw]" />
-                    : <img src={media.url} alt={media.filename || 'Recuerdo de boda'} className="max-h-[82vh] max-w-[92vw] object-contain" />}
+                    ? <video src={media.url} controls preload="metadata" playsInline className="max-h-[82vh] max-w-[92vw]" />
+                    : <img src={media.url} alt={media.filename || 'Recuerdo de boda'} className="max-h-[82vh] max-w-[92vw] object-contain" decoding="async" />}
             </div>
         </div>
     );
@@ -212,7 +233,7 @@ export default function WeddingAlbumManager() {
         const token = manageFromUrl || window.sessionStorage.getItem(storageKey);
         if (!token) {
             setAccessState('invalid');
-            setAccessMessage('Este enlace privado no es válido o ya venció. Solicita uno nuevo a Woowbe.');
+            setAccessMessage('Este portal se abre con el enlace privado original. Copiar la dirección después de abrirlo no conserva el acceso por seguridad; solicita que te compartan el enlace completo nuevamente.');
             return;
         }
 
@@ -354,6 +375,7 @@ export default function WeddingAlbumManager() {
             pending: firstNumber(values.pending, values.pendingCount, config?.pending, config?.pendingCount),
             approved: firstNumber(values.approved, values.approvedCount, config?.approved, config?.approvedCount),
             totalSize: firstNumber(values.usedBytes, values.totalSizeBytes, values.totalBytes, values.sizeBytes, config?.usedBytes, config?.totalSizeBytes),
+            storageLimit: firstNumber(config?.limits?.maxTotalStorageBytes, config?.maxTotalStorageBytes),
         };
     }, [config]);
 
@@ -390,7 +412,7 @@ export default function WeddingAlbumManager() {
                         <StatCard icon={Video} value={stats.videos} label="Videos" tone="blue" />
                         <StatCard icon={AlertCircle} value={stats.pending} label="Pendientes" tone="gold" />
                         <StatCard icon={Check} value={stats.approved} label="Aprobados" tone="sage" />
-                        <StatCard icon={FolderArchive} value={formatBytes(stats.totalSize)} label="Espacio usado" tone="cream" />
+                        <StorageCard usedBytes={stats.totalSize} limitBytes={stats.storageLimit} />
                     </div>
                 </section>
 
@@ -428,9 +450,11 @@ export default function WeddingAlbumManager() {
                                 return (
                                     <article key={mediaId || item.url} className="overflow-hidden rounded-2xl border border-[#d7dfd6] bg-white shadow-sm">
                                         <button type="button" onClick={() => setActiveMedia(item)} className="group relative block aspect-[4/3] w-full overflow-hidden bg-[#dde6dc] text-left focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#416869]" aria-label={`Abrir ${isVideo ? 'video' : 'foto'}: ${item.filename || 'recuerdo de boda'}`}>
-                                            {isVideo && !item.thumbnailUrl
-                                                ? <video src={item.url} preload="metadata" muted playsInline className="h-full w-full object-cover" />
-                                                : <img src={source} alt="" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" />}
+                                            {isVideo
+                                                ? item.thumbnailUrl
+                                                    ? <img src={item.thumbnailUrl} alt="" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" decoding="async" />
+                                                    : <span className="flex h-full w-full items-center justify-center bg-[#315b5c] text-white/85"><Video size={34} aria-hidden="true" /></span>
+                                                : <img src={source} alt="" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" decoding="async" />}
                                             {isVideo ? <span className="absolute inset-0 flex items-center justify-center bg-[#173f40]/25 text-white"><span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white/20 backdrop-blur-sm"><Play size={18} fill="currentColor" aria-hidden="true" /></span></span> : null}
                                         </button>
                                         <div className="p-4">
