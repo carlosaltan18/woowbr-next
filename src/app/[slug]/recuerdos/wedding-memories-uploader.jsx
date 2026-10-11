@@ -48,6 +48,24 @@ const createSessionId = () => {
     return `recuerdos-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 };
 
+const getWeddingSessionId = (slug) => {
+    const fallback = createSessionId();
+    if (typeof window === 'undefined' || !slug) return fallback;
+
+    const storageKey = `wedding-session:${slug}`;
+    try {
+        const storedSessionId = window.localStorage.getItem(storageKey);
+        if (storedSessionId) return storedSessionId;
+
+        window.localStorage.setItem(storageKey, fallback);
+        return fallback;
+    } catch {
+        // Un navegador en modo privado puede bloquear localStorage. En ese caso
+        // se mantiene una sesión temporal para no impedir la carga.
+        return fallback;
+    }
+};
+
 async function requestJson(path, options = {}) {
     if (!API_BASE_URL) {
         throw new Error('El servicio de recuerdos no está configurado.');
@@ -290,6 +308,12 @@ export default function WeddingMemoriesUploader() {
     }, [accessToken, getConfig]);
 
     useEffect(() => {
+        // No reutilizar una sesión si la misma instancia del componente cambia
+        // de boda durante la navegación.
+        sessionIdRef.current = '';
+    }, [slug]);
+
+    useEffect(() => {
         if (config?.publicGalleryEnabled) void loadGallery();
     }, [config?.publicGalleryEnabled, loadGallery]);
 
@@ -328,7 +352,11 @@ export default function WeddingMemoriesUploader() {
     const allowedTypes = config?.allowedContentTypes?.length ? config.allowedContentTypes : FALLBACK_ALLOWED_TYPES;
     const acceptedTypesText = formatAcceptedTypes(allowedTypes);
     const maxFiles = Number(config?.limits?.maxFilesPerSession) || 0;
+    const maxImages = Number(config?.limits?.maxImagesPerSession) || 0;
+    const maxVideos = Number(config?.limits?.maxVideosPerSession) || 0;
     const fileCountInSession = files.filter((entry) => entry.state !== 'error').length;
+    const imageCountInSession = files.filter((entry) => entry.state !== 'error' && getMediaKind(entry.file.type) === 'image').length;
+    const videoCountInSession = files.filter((entry) => entry.state !== 'error' && getMediaKind(entry.file.type) === 'video').length;
     const successCount = files.filter((entry) => entry.state === 'success').length;
     const readyCount = files.filter((entry) => entry.state === 'ready').length;
 
@@ -353,6 +381,8 @@ export default function WeddingMemoriesUploader() {
         const nextEntries = [];
         const errors = [];
         let remainingSlots = maxFiles > 0 ? Math.max(maxFiles - fileCountInSession, 0) : Number.POSITIVE_INFINITY;
+        let remainingImages = maxImages > 0 ? Math.max(maxImages - imageCountInSession, 0) : Number.POSITIVE_INFINITY;
+        let remainingVideos = maxVideos > 0 ? Math.max(maxVideos - videoCountInSession, 0) : Number.POSITIVE_INFINITY;
 
         [...selectedFiles].forEach((file) => {
             const error = validateFile(file);
@@ -361,7 +391,16 @@ export default function WeddingMemoriesUploader() {
                 return;
             }
             if (remainingSlots <= 0) {
-                errors.push(`Alcanzaste el límite de ${maxFiles} archivos para este enlace.`);
+                errors.push(`Alcanzaste el límite de ${maxFiles} archivos por invitado/dispositivo.`);
+                return;
+            }
+            const mediaKind = getMediaKind(file.type);
+            if (mediaKind === 'image' && remainingImages <= 0) {
+                errors.push(`Alcanzaste el límite de ${maxImages} fotos por invitado/dispositivo.`);
+                return;
+            }
+            if (mediaKind === 'video' && remainingVideos <= 0) {
+                errors.push(`Alcanzaste el límite de ${maxVideos} videos por invitado/dispositivo.`);
                 return;
             }
             nextEntries.push({
@@ -372,11 +411,13 @@ export default function WeddingMemoriesUploader() {
                 error: '',
             });
             remainingSlots -= 1;
+            if (mediaKind === 'image') remainingImages -= 1;
+            if (mediaKind === 'video') remainingVideos -= 1;
         });
 
         if (nextEntries.length) setFiles((current) => [...current, ...nextEntries]);
         if (errors.length) setNotice(errors[0]);
-    }, [availability.canUpload, fileCountInSession, isUploading, maxFiles, validateFile]);
+    }, [availability.canUpload, fileCountInSession, imageCountInSession, isUploading, maxFiles, maxImages, maxVideos, validateFile, videoCountInSession]);
 
     const handlePickerChange = (event) => {
         addFiles(event.target.files);
@@ -388,7 +429,7 @@ export default function WeddingMemoriesUploader() {
     };
 
     const uploadEntry = async (entry) => {
-        if (!sessionIdRef.current) sessionIdRef.current = createSessionId();
+        if (!sessionIdRef.current) sessionIdRef.current = getWeddingSessionId(slug);
         updateFile(entry.id, { state: 'uploading', progress: 1, error: '' });
 
         try {
@@ -478,7 +519,8 @@ export default function WeddingMemoriesUploader() {
                         <p className="mt-5 max-w-sm text-base leading-7 text-[#526e6f]">Ayúdanos a guardar los momentos especiales de este día.</p>
                         <div className="mt-8 border-t border-[#cbd8cc] pt-5 text-sm leading-6 text-[#5d7879]">
                             <p><strong className="font-semibold text-[#385d5e]">Formatos:</strong> {acceptedTypesText}</p>
-                            <p className="mt-1"><strong className="font-semibold text-[#385d5e]">Límites:</strong> hasta {formatBytes(Number(config?.limits?.maxImageSizeBytes))} por foto y {formatBytes(Number(config?.limits?.maxVideoSizeBytes))} por video{maxFiles ? ` · ${maxFiles} archivos por enlace` : ''}.</p>
+                            <p className="mt-1"><strong className="font-semibold text-[#385d5e]">Tamaño:</strong> hasta {formatBytes(Number(config?.limits?.maxImageSizeBytes))} por foto y {formatBytes(Number(config?.limits?.maxVideoSizeBytes))} por video.</p>
+                            {(maxFiles || maxImages || maxVideos) ? <p className="mt-1"><strong className="font-semibold text-[#385d5e]">Por invitado/dispositivo:</strong>{maxFiles ? ` ${maxFiles} archivos` : ''}{maxImages ? `${maxFiles ? ' ·' : ''} ${maxImages} fotos` : ''}{maxVideos ? `${maxFiles || maxImages ? ' ·' : ''} ${maxVideos} videos` : ''}.</p> : null}
                         </div>
                     </div>
 
