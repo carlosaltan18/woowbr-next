@@ -635,7 +635,7 @@ export function InvitacionXVLiz() {
                                 </div>
                                 <p className="mt-4 text-3xl font-medium tracking-[.5em]">RSVP</p>
                                 <p className="mt-14 text-[.87rem] font-medium italic leading-[1.55]">La cuenta regresiva ha comenzado y cada detalle está siendo preparado con mucha ilusión para compartir este gran momento contigo.</p>
-                                <p className="mt-10 text-[.86rem] font-medium italic leading-[1.55]">Por favor, confirma tu asistencia antes del 15 de octubre, así podremos tener todo listo para darte la bienvenida y hacer de este día una experiencia inolvidable.</p>
+                                <p className="mt-10 text-[.86rem] font-medium italic leading-[1.55]">Por favor, confirma tu asistencia antes del 25 de octubre, así podremos tener todo listo para darte la bienvenida y hacer de este día una experiencia inolvidable.</p>
                                 <button type="button" onClick={() => setRsvpOpen(true)} className="mt-9 min-w-56 rounded-md bg-gradient-to-r from-[#ad7900] via-[#e0ad1a] to-[#ad7900] px-7 py-4 text-[.69rem] font-semibold uppercase tracking-[.16em] text-[#fff9d0] shadow-[0_8px_18px_rgba(127,86,0,.25)] transition hover:-translate-y-0.5">Confirmar asistencia</button>
                             </div>
                         </PaperSection>
