@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { CalendarPlus, Check, ChevronDown, ChevronUp, Church, MapPin, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
+import { CalendarPlus, Check, ChevronDown, ChevronUp, Church, LockKeyhole, MapPin, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import { useSearchParams } from 'next/navigation';
 import { BrandWaze, BrandTiktok, BrandInstagram } from 'tabler-icons-react';
@@ -385,6 +385,7 @@ export function InvitacionXVLiz() {
     const [rsvpOpen, setRsvpOpen] = useState(false);
     const [musicMuted, setMusicMuted] = useState(false);
     const [progress, setProgress] = useState(0);
+    const invitationEnabled = searchParams.has('v');
 
     const invitation = useMemo(() => {
         const rawAdults = getFirstParam(searchParams, ['adultos', 'cantidadAdultos', 'cantidad-adultos', 'cantidad_de_adultos'], '1');
@@ -404,17 +405,17 @@ export function InvitacionXVLiz() {
     }, [searchParams]);
 
     useEffect(() => {
-        if (!opened) return undefined;
+        if (!invitationEnabled || !opened) return undefined;
         const update = () => { const total = document.documentElement.scrollHeight - window.innerHeight; setProgress(total > 0 ? Math.min(100, window.scrollY / total * 100) : 0); };
         update(); window.addEventListener('scroll', update, { passive: true }); return () => window.removeEventListener('scroll', update);
-    }, [opened]);
+    }, [invitationEnabled, opened]);
 
     useEffect(() => {
         const music = musicRef.current;
-        if (!music) return;
+        if (!invitationEnabled || !music) return;
         music.muted = musicMuted;
         if (opened && !musicMuted) music.play().catch(() => { });
-    }, [opened, musicMuted]);
+    }, [invitationEnabled, opened, musicMuted]);
 
     const playMusicFromGesture = () => {
         const music = musicRef.current;
@@ -444,6 +445,21 @@ export function InvitacionXVLiz() {
         setMusicMuted(nextMuted);
         if (!nextMuted) musicRef.current?.play().catch(() => { });
     };
+
+    if (!invitationEnabled) {
+        return (
+            <main className="grid min-h-screen place-items-center bg-[#252525] px-5 font-[family-name:var(--font-josefin)] text-[#796600]">
+                <section className="w-full max-w-md rounded-[2rem] border border-[#b29420]/30 bg-[#fffbea] px-7 py-12 text-center shadow-[0_20px_60px_rgba(0,0,0,.3)] sm:px-12">
+                    <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#f6ecc0] text-[#8d7500]">
+                        <LockKeyhole size={24} strokeWidth={1.7} aria-hidden="true" />
+                    </div>
+                    <p className="mt-7 text-[.65rem] font-semibold uppercase tracking-[.3em]">Invitación privada</p>
+                    <h1 className="mt-4 font-serif text-4xl leading-tight text-[#66590a]">Esta invitación aún no está habilitada</h1>
+                    <p className="mx-auto mt-5 max-w-sm text-sm leading-relaxed text-[#736423]">Utiliza el enlace completo que te compartió la familia de Marce para conocer todos los detalles y confirmar tu asistencia.</p>
+                </section>
+            </main>
+        );
+    }
 
     return (
         <main className="min-h-screen bg-[#252525] font-[family-name:var(--font-josefin)] text-[#9a8300]">
