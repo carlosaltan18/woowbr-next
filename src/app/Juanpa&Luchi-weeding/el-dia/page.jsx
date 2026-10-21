@@ -1,5 +1,5 @@
-import { ElDiaJuanpaLuchi } from '../components/invitacion-juanpa-luchi';
+import { redirect } from 'next/navigation';
 
 export default function Page() {
-    return <ElDiaJuanpaLuchi />;
+    redirect('/Juanpa&Luchi-weeding#el-dia');
 }

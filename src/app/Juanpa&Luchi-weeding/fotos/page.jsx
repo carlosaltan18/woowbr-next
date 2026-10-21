@@ -1,5 +1,5 @@
-import { FotosJuanpaLuchi } from '../components/invitacion-juanpa-luchi';
+import { redirect } from 'next/navigation';
 
 export default function Page() {
-    return <FotosJuanpaLuchi />;
+    redirect('/Juanpa&Luchi-weeding#historia');
 }
