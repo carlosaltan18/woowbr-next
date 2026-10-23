@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { CalendarPlus, Check, ChevronDown, ChevronUp, Church, LockKeyhole, MapPin, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
+import { CalendarPlus, Check, ChevronDown, ChevronUp, Church, MapPin, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import { useSearchParams } from 'next/navigation';
 import { BrandWaze, BrandTiktok, BrandInstagram } from 'tabler-icons-react';
@@ -405,17 +405,17 @@ export function InvitacionXVLiz() {
     }, [searchParams]);
 
     useEffect(() => {
-        if (!invitationEnabled || !opened) return undefined;
+        if (!opened) return undefined;
         const update = () => { const total = document.documentElement.scrollHeight - window.innerHeight; setProgress(total > 0 ? Math.min(100, window.scrollY / total * 100) : 0); };
         update(); window.addEventListener('scroll', update, { passive: true }); return () => window.removeEventListener('scroll', update);
-    }, [invitationEnabled, opened]);
+    }, [opened]);
 
     useEffect(() => {
         const music = musicRef.current;
-        if (!invitationEnabled || !music) return;
+        if (!music) return;
         music.muted = musicMuted;
         if (opened && !musicMuted) music.play().catch(() => { });
-    }, [invitationEnabled, opened, musicMuted]);
+    }, [opened, musicMuted]);
 
     const playMusicFromGesture = () => {
         const music = musicRef.current;
@@ -445,21 +445,6 @@ export function InvitacionXVLiz() {
         setMusicMuted(nextMuted);
         if (!nextMuted) musicRef.current?.play().catch(() => { });
     };
-
-    if (!invitationEnabled) {
-        return (
-            <main className="grid min-h-screen place-items-center bg-[#252525] px-5 font-[family-name:var(--font-josefin)] text-[#796600]">
-                <section className="w-full max-w-md rounded-[2rem] border border-[#b29420]/30 bg-[#fffbea] px-7 py-12 text-center shadow-[0_20px_60px_rgba(0,0,0,.3)] sm:px-12">
-                    <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#f6ecc0] text-[#8d7500]">
-                        <LockKeyhole size={24} strokeWidth={1.7} aria-hidden="true" />
-                    </div>
-                    <p className="mt-7 text-[.65rem] font-semibold uppercase tracking-[.3em]">Invitación privada</p>
-                    <h1 className="mt-4 font-serif text-4xl leading-tight text-[#66590a]">Esta invitación aún no está habilitada</h1>
-                    <p className="mx-auto mt-5 max-w-sm text-sm leading-relaxed text-[#736423]">Utiliza el enlace completo que te compartió la familia de Marce para conocer todos los detalles y confirmar tu asistencia.</p>
-                </section>
-            </main>
-        );
-    }
 
     return (
         <main className="min-h-screen bg-[#252525] font-[family-name:var(--font-josefin)] text-[#9a8300]">
@@ -614,7 +599,7 @@ export function InvitacionXVLiz() {
                             </div>
                         </PaperSection>
 
-                        <PaperSection id="rsvp" pink className="min-h-[1080px] pt-12">
+                        <PaperSection id="rsvp" pink className={`${invitationEnabled ? 'min-h-[1080px]' : 'min-h-[560px]'} pt-12`}>
                             <FloatingAsset src={ASSETS.branch} className="-left-10 top-[64%] h-28 w-36" movement="xv-sway" imageClassName="-rotate-[18deg]" />
                             <FloatingAsset src={ASSETS.circles} className="-right-20 top-72 h-48 w-48 opacity-40" movement="xv-drift" />
                             <FloatingAsset src={ASSETS.miniDaisy} className="right-9 top-52 h-10 w-10" movement="xv-float" />
@@ -630,13 +615,13 @@ export function InvitacionXVLiz() {
                             <div className="relative z-10 mx-auto max-w-[300px]">
                                 <Asset src={ASSETS.gift} alt="Regalo" className="mx-auto w-14" />
                                 <p className="mt-8 text-[.65rem] font-semibold uppercase leading-[1.55] tracking-[.31em]">El mejor regalo<br />es compartir<br />este momento contigo.<br />Si deseas<br />bendecirme contaré<br />con una cajita<br />y sobres el día del evento.</p>
-                                <div className="xv-bob mx-auto mt-20 h-24 w-24">
+                                {invitationEnabled && <><div className="xv-bob mx-auto mt-20 h-24 w-24">
                                     <Asset src={ASSETS.discoBall} alt="Esfera disco" className="xv-straight-ball h-full w-full object-contain" />
                                 </div>
                                 <p className="mt-4 text-3xl font-medium tracking-[.5em]">RSVP</p>
                                 <p className="mt-14 text-[.87rem] font-medium italic leading-[1.55]">La cuenta regresiva ha comenzado y cada detalle está siendo preparado con mucha ilusión para compartir este gran momento contigo.</p>
                                 <p className="mt-10 text-[.86rem] font-medium italic leading-[1.55]">Por favor, confirma tu asistencia antes del 25 de octubre, así podremos tener todo listo para darte la bienvenida y hacer de este día una experiencia inolvidable.</p>
-                                <button type="button" onClick={() => setRsvpOpen(true)} className="mt-9 min-w-56 rounded-md bg-gradient-to-r from-[#ad7900] via-[#e0ad1a] to-[#ad7900] px-7 py-4 text-[.69rem] font-semibold uppercase tracking-[.16em] text-[#fff9d0] shadow-[0_8px_18px_rgba(127,86,0,.25)] transition hover:-translate-y-0.5">Confirmar asistencia</button>
+                                <button type="button" onClick={() => setRsvpOpen(true)} className="mt-9 min-w-56 rounded-md bg-gradient-to-r from-[#ad7900] via-[#e0ad1a] to-[#ad7900] px-7 py-4 text-[.69rem] font-semibold uppercase tracking-[.16em] text-[#fff9d0] shadow-[0_8px_18px_rgba(127,86,0,.25)] transition hover:-translate-y-0.5">Confirmar asistencia</button></>}
                             </div>
                         </PaperSection>
                         <footer className="flex flex-col items-center bg-[#252525] px-6 py-8 text-center text-[.6rem] uppercase tracking-[.24em] text-[#f5e994]">
@@ -667,7 +652,7 @@ export function InvitacionXVLiz() {
                 )}
             </div>
 
-            {rsvpOpen && <AttendanceModal close={() => setRsvpOpen(false)} {...invitation} />}
+            {invitationEnabled && rsvpOpen && <AttendanceModal close={() => setRsvpOpen(false)} {...invitation} />}
 
             <style jsx global>{` 
                 .xv-paper { background-color: #fcf4aa; background-image: linear-gradient(rgba(255, 248, 181, .57), rgba(255, 248, 181, .57)), url('${PAPER}'); background-size: 100% auto; background-repeat: repeat-y; } 
