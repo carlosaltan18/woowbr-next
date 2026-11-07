@@ -83,18 +83,13 @@ if (records.length) {
     font: { name: "Arial", size: 10, color: "#1F2937" },
     verticalAlignment: "center",
   };
-  dataRange.format.borders = {
-    preset: "insideHorizontal",
-    style: "thin",
-    color: "#E6DED5",
-  };
   invitations.getRange(`A5:A${records.length + 4}`).format.horizontalAlignment = "center";
   invitations.getRange(`C5:C${records.length + 4}`).format.horizontalAlignment = "center";
   invitations.getRange(`D5:D${records.length + 4}`).format.font = {
     name: "Arial",
     size: 10,
     color: "#155E75",
-    underline: true,
+    underline: "single",
   };
   invitations.tables.add(`A4:D${records.length + 4}`, true, "GuestInvitationLinks");
 }
@@ -129,11 +124,6 @@ if (pendingRows.length) {
   pending.getRange(`A4:B${pendingRows.length + 3}`).format = {
     font: { name: "Arial", size: 10, color: "#1F2937" },
   };
-  pending.getRange(`A4:B${pendingRows.length + 3}`).format.borders = {
-    preset: "insideHorizontal",
-    style: "thin",
-    color: "#E6DED5",
-  };
 }
 pending.getRange("A:A").format.columnWidth = 12;
 pending.getRange("B:B").format.columnWidth = 34;
@@ -151,6 +141,13 @@ const inspection = await workbook.inspect({
 await fs.mkdir(outputDir, { recursive: true });
 const exported = await SpreadsheetFile.exportXlsx(workbook);
 await exported.save(outputPath);
+
+const preview = await workbook.render({
+  sheetName: "Invitaciones",
+  range: `A1:D${Math.min(records.length + 4, 18)}`,
+  scale: 1.5,
+});
+await fs.writeFile(`${outputDir}/invitaciones-preview.png`, new Uint8Array(await preview.arrayBuffer()));
 
 console.log(JSON.stringify({
   outputPath,
