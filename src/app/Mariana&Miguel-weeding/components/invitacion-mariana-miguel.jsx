@@ -689,7 +689,6 @@ function Rsvp({ reservation }) {
   const [notice, setNotice] = useState("");
   const [saving, setSaving] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [showForm, setShowForm] = useState(false);
   const updateAttendee = (index, field, value) =>
     setAttendees((current) =>
       current.map((attendee, attendeeIndex) =>
@@ -803,7 +802,6 @@ function Rsvp({ reservation }) {
         onClick={() => {
           setNotice("");
           setSubmitted(false);
-          setShowForm(false);
           setOpen(true);
         }}
         className="mt-[6cqw] min-h-11 min-w-[37cqw] rounded-[3cqw] bg-[#6a0f1b] bg-cover bg-center px-[6cqw] py-[2.8cqw] text-[3.3cqw] font-medium uppercase tracking-[.26em] text-[#d8c8be] italic shadow-md"
@@ -816,45 +814,10 @@ function Rsvp({ reservation }) {
           className="fixed inset-0 z-[80] flex items-end justify-center bg-black/65 p-3 backdrop-blur-sm sm:items-center"
           role="dialog"
           aria-modal="true"
-          aria-labelledby={showForm ? "mariana-rsvp-title" : "mariana-rsvp-cover-title"}
+          aria-labelledby="mariana-rsvp-title"
         >
-          {!showForm ? (
-            <div className="relative aspect-[9/16] max-h-[92svh] w-full max-w-[430px] overflow-hidden rounded-[1.6rem] bg-[#10301d] shadow-2xl">
-              <img
-                src={ASSET("img/sobre.webp")}
-                alt="Portada de la invitación de Mariana y Miguel"
-                className="h-full w-full object-cover"
-              />
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                aria-label="Cerrar RSVP"
-                className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full border border-[#d7e4d0]/70 bg-[#0a2b1b]/35 text-[#f4f0df] backdrop-blur-sm"
-              >
-                <X size={20} />
-              </button>
-              <div className="absolute inset-x-[8%] top-[72%] text-center text-[#e7efdf] [text-shadow:0_1px_1px_rgba(0,0,0,.72)]">
-                <span className="block text-[.62rem] uppercase tracking-[.42em] opacity-85">
-                  Para
-                </span>
-                <h3
-                  id="mariana-rsvp-cover-title"
-                  className="mt-2 font-serif text-[clamp(2rem,9vw,3.35rem)] leading-tight italic"
-                >
-                  {reservation.guestName || "nuestros invitados"}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowForm(true)}
-                className="absolute inset-x-[10%] bottom-[max(1.25rem,env(safe-area-inset-bottom))] min-h-12 rounded-full border border-[#e7efdf]/70 bg-[#10301d]/45 px-5 py-3 text-[.72rem] font-semibold uppercase tracking-[.24em] text-[#f4f0df] backdrop-blur-sm transition hover:bg-[#10301d]/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f4f0df]"
-              >
-                Continuar a confirmación
-              </button>
-            </div>
-          ) : (
-            <div className="mm-form-modal mm-rsvp-panel max-h-[92svh] w-full overflow-y-auto p-[26px] text-left shadow-2xl">
-              {submitted ? (
+          <div className="mm-form-modal mm-rsvp-panel max-h-[92svh] w-full overflow-y-auto p-[26px] text-left shadow-2xl">
+            {submitted ? (
               <div className="py-8 text-center">
                 <Check className="mx-auto h-12 w-12 rounded-full bg-[#6a0f1b] p-3 text-[#f5eadb]" />
                 <h3 className="mt-6 font-serif text-3xl italic text-[#2b2f16]">
@@ -971,9 +934,8 @@ function Rsvp({ reservation }) {
                   {saving ? "Enviando…" : "Enviar confirmación"}
                 </button>
               </form>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
     </Section>
